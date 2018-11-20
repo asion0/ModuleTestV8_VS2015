@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModuleTestV8", "ModuleTestV8.csproj", "{06DB3083-4AAC-4032-B2BA-494FADC48EAD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_No_Motor|Any CPU = Debug_No_Motor|Any CPU
+		Debug_No_Motor|x86 = Debug_No_Motor|x86
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release_NoMotor|Any CPU = Release_NoMotor|Any CPU
+		Release_NoMotor|x86 = Release_NoMotor|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Debug_No_Motor|Any CPU.ActiveCfg = Debug_NoMotor|Any CPU
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Debug_No_Motor|Any CPU.Build.0 = Debug_NoMotor|Any CPU
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Debug_No_Motor|x86.ActiveCfg = Debug_NoMotor|x86
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Debug_No_Motor|x86.Build.0 = Debug_NoMotor|x86
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Debug|x86.ActiveCfg = Debug|x86
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Debug|x86.Build.0 = Debug|x86
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Release_NoMotor|Any CPU.ActiveCfg = Release_NoMotor|Any CPU
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Release_NoMotor|Any CPU.Build.0 = Release_NoMotor|Any CPU
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Release_NoMotor|x86.ActiveCfg = Debug|x86
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Release_NoMotor|x86.Build.0 = Debug|x86
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Release|x86.ActiveCfg = Release|x86
+		{06DB3083-4AAC-4032-B2BA-494FADC48EAD}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
