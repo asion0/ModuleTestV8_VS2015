@@ -29,7 +29,6 @@ namespace ModuleTestV8
         protected override void WndProc(ref Message m)
         {
             base.WndProc(ref m);        // call default p
-
             if (m.Msg == WM_DEVICECHANGE)
             {
                 // WM_DEVICECHANGE can have several meanings depending on the WParam value...
@@ -66,7 +65,6 @@ namespace ModuleTestV8
                             }
                             InitComSel();
                         }
-
                     }
                 }
             }
@@ -74,18 +72,18 @@ namespace ModuleTestV8
 
         private ModuleTestProfile profile;
 
-        private System.Windows.Forms.CheckBox[] disableTable;
+        private CheckBox[] disableTable;
         private ComboBox[] comSelTable;
         private Panel[] panelTable;
-        private System.Windows.Forms.Label[] resultTable;
-        private System.Windows.Forms.ListBox[] messageTable;
+        private Label[] resultTable;
+        private ListBox[] messageTable;
         private PictureBox[] snrChartTable;
 
         private int[] failCount;
         private int[] passCount;
-        private System.Windows.Forms.Label[] failTable;
-        private System.Windows.Forms.Label[] totalTable;
-        private System.Windows.Forms.Label[] yieldTable;
+        private Label[] failTable;
+        private Label[] totalTable;
+        private Label[] yieldTable;
 
         private SessionReport rp = new SessionReport();
         private XmlDocument doc = new XmlDocument();
@@ -175,6 +173,14 @@ namespace ModuleTestV8
                     o.a4ComPort, o.b1ComPort, o.b2ComPort, o.b3ComPort, o.b4ComPort };
 
             string[] ports = SerialPort.GetPortNames();
+
+            Array.Sort(ports, delegate (string s1, string s2)
+            {
+                int ns1 = Convert.ToInt32(s1.Replace("COM", ""));
+                int ns2 = Convert.ToInt32(s2.Replace("COM", ""));
+                return ((ns1 == ns2) ? 0 : ((ns1 > ns2) ? 1 : -1));
+            });
+
             for (int i = 0; i < ModuleCount; i++)
             {
                 ComboBox c = comSelTable[i];
@@ -191,7 +197,7 @@ namespace ModuleTestV8
         //Properties載入後，更新UI使之同步
         private void UpdateUIBySetting()
         {
-            ModuleTestV8.Properties.Settings o = ModuleTestV8.Properties.Settings.Default;
+            Properties.Settings o = Properties.Settings.Default;
             bool[] disableSetting = { o.gdDisable, o.a1Disable, o.a2Disable, o.a3Disable,
                     o.a4Disable, o.b1Disable, o.b2Disable, o.b3Disable, o.b4Disable };
 
@@ -527,12 +533,8 @@ namespace ModuleTestV8
             firmwareGroup.Visible = false;
             startDownload.Visible = false;
             startTesting.Visible = false;
-            startResetTest.Visible = false;
-            startiCacheTest.Visible = true;
             cancel.Visible = true;
 
-            startiCacheTest.Top = startTesting.Top;
-            startiCacheTest.Left = startTesting.Left;
             Size s = testCounter.Size;
             s.Width += 240;
             testCounter.Size = s;
@@ -608,11 +610,8 @@ namespace ModuleTestV8
             firmwareGroup.Visible = false;
             startDownload.Visible = false;
             startTesting.Visible = false;
-            startResetTest.Visible = true;
             cancel.Visible = false;
 
-            startResetTest.Top = startTesting.Top;
-            startResetTest.Left = startTesting.Left;
             Size s = testCounter.Size;
             s.Width += 240;
             testCounter.Size = s;
@@ -641,12 +640,7 @@ namespace ModuleTestV8
             firmwareGroup.Visible = false;
             startDownload.Visible = false;
             startTesting.Visible = false;
-            startResetTest.Visible = false;
-            startOpenPortTest.Visible = true;
             cancel.Visible = true;
-
-            startOpenPortTest.Top = startTesting.Top;
-            startOpenPortTest.Left = startTesting.Left;
 
             disableTable[0].Visible = false;
             panelTable[0].Visible = false;
@@ -1123,19 +1117,7 @@ namespace ModuleTestV8
             {
                 startTesting.Enabled = false;
                 startDownload.Enabled = false;
-                startResetTest.Enabled = false;
-                return;
-            }
-
-            if (Global.functionType == Global.FunctionType.ResetTester)
-            {
-                startResetTest.Enabled = true;
-                return;
-            }
-
-            if (Global.functionType == Global.FunctionType.iCacheTester)
-            {
-                startiCacheTest.Enabled = true;
+                startDownload2.Enabled = false;
                 return;
             }
 
@@ -1143,10 +1125,24 @@ namespace ModuleTestV8
             if (profile.enableDownload && profile.fwProfile != null && profile.fwProfile.promRaw != null)
             {
                 startDownload.Enabled = true;
+                if (profile.enableSlaveDownload && profile.twoUartDownload)
+                {
+                    startDownload.Height = 30;
+                    startDownload2.Visible = true;
+                    if (profile.slaveFwProfile != null && profile.slaveFwProfile.promRaw != null)
+                    {
+                        startDownload2.Enabled = true;
+                    }
+                }
             }
             else
             {
                 startDownload.Enabled = false;
+                if (profile.enableSlaveDownload && profile.twoUartDownload)
+                {
+                    startDownload.Height = startTesting.Height;
+                    startDownload2.Visible = false;
+                }
             }
         }
 
@@ -1324,7 +1320,6 @@ namespace ModuleTestV8
                 b.TopIndex = b.Items.Count - (int)(b.Height / b.ItemHeight);
             }
             testParam[i].log.AppendLine(s);
-
         }
 
         private void LaunchTestDevice()
@@ -1349,63 +1344,9 @@ namespace ModuleTestV8
             testTimer.Start();
         }
 
-        private void startDownload_Click(object sender, EventArgs e)
-        {
-            rp.NewSession(SessionReport.SessionType.Download);
-            bool hasWork = false;
-            TestModule.ClearResult();
-            TestModule.ResetDrMcuStatus();
-
-            for (int i = 1; i < ModuleCount; i++)
-            {
-                if (!IsDeviceChecked(i))
-                {
-                    continue;
-                }
-                snrChartTable[i].Invalidate();
-                testParam[i].comPort = (comSelTable[i] as ComboBox).Text;
-                testParam[i].profile = profile;
-                testParam[i].log.Remove(0, testParam[i].log.Length);
-                testParam[i].annIoPort = (anCtrlSel as ComboBox).Text;
-
-                TestModule.IncreaseTotalTestCount();
-                hasWork = true;
-                SetResultDisplay(resultTable[i] as Label, ResultDisplayType.Downloading);
-            }
-
-            if (!hasWork)
-            {
-                ErrorMessage.Show(ErrorMessage.Warnings.NoDeviceSelectWarning);
-                return;
-            }
-
-            if ((profile.enableSlaveDownload) && (anCtrlSel as ComboBox).Text == "")
-            {
-                MessageBox.Show("Please select MCU COM!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            EnableButton(false);
-            TestRunning = TestStatus.Downloading;
-            TestModule.antennaEvent.Set();
-            for (int i = 1; i < ModuleCount; i++)
-            {
-                if (!IsDeviceChecked(i))
-                {
-                    continue;
-                }
-                bkWorker[i].RunWorkerAsync(testParam[i]);
-                AddMessage(i, "-------------------- Begin Download --------------------");
-                //Thread.Sleep(20);
-            }
-            
-            startCounting = true;
-            testTimer.Interval = 500;
-            testTimer.Start();
-        }
-
         private void startTesting_Click(object sender, EventArgs e)
         {
+            PressStrsvrButton(true);
             rp.NewSession(SessionReport.SessionType.Testing);
 
             if ((disableTable[0] as CheckBox).Checked || (comSelTable[0] as ComboBox).SelectedIndex < 0)
@@ -1464,7 +1405,7 @@ namespace ModuleTestV8
                 }
             }
 
-            TestModule.ClearResult();
+            TestModule.ClearResult(TestModule.ClearType.All);
             SetResultDisplay(resultTable[0] as Label, ResultDisplayType.Testing);
             bkWorker[0].RunWorkerAsync(testParam[0]);
             EnableButton(false);
@@ -1517,7 +1458,6 @@ namespace ModuleTestV8
         {
             WorkerParam p = e.Argument as WorkerParam;
             TestModule t = new TestModule();
-            //p.startTime = DateTime.Now;
             Stopwatch w = new Stopwatch();
             p.voltage = voltage;
             w.Start();
@@ -1537,29 +1477,6 @@ namespace ModuleTestV8
                         e.Cancel = true;
                     }
                 }
-/*
-                else if (Global.functionType == Global.FunctionType.iCacheTester)
-                {
-                    if (t.DoiCacheTest(p))
-                    {
-                        e.Cancel = true;
-                    }
-                }
-                else if (Global.functionType == Global.FunctionType.ResetTester)
-                {
-                    if (t.DoResetTest(p))
-                    {
-                        e.Cancel = true;
-                    }
-                }
-                else if (Global.functionType == Global.FunctionType.OpenPortTester)
-                {
-                    if (t.OpenPortTest(p))
-                    {
-                        e.Cancel = true;
-                    }
-                }
-*/
                 else
                 {
                     if(p.profile.testDrCyro)
@@ -1584,16 +1501,18 @@ namespace ModuleTestV8
                         }
                     }
                 }
+                TestModule.DecreaseTotalTestCount();
             }
+
             t.EndProcess(p);
             p.duration = w.ElapsedMilliseconds;
             w.Stop();
-            TestModule.DecreaseTotalTestCount();
         }
 
         private void SaveReport()
         {
-            if (Global.functionType != Global.FunctionType.ModuleTest)
+            if (Global.functionType != Global.FunctionType.ModuleTest &&
+                Global.functionType != Global.FunctionType.ModuleTestDr)
             {
                 return;
             }
@@ -1759,6 +1678,7 @@ namespace ModuleTestV8
                 TestRunning = TestStatus.Finished;
                 SetResultDisplay(resultTable[0] as Label, ResultDisplayType.None);
                 EnableButton(true);
+                PressStrsvrButton(false);
 
                 if (continueMode && (profile.testDrCyro || profile.testInsDrGyro))
                 {
@@ -1942,9 +1862,7 @@ namespace ModuleTestV8
                     testParam[i].bdSnrOffset = bdSnrOffsetTable[i];
                     testParam[i].giSnrOffset = giSnrOffsetTable[i];
                 }
-
             }
-   
         }
 
         private void hiddenNotify_TextChanged(object sender, EventArgs e)
@@ -1964,63 +1882,18 @@ namespace ModuleTestV8
                 //return;
             }
         }
-        /*
-        private void startResetTest_Click(object sender, EventArgs e)
-        {
-            bool hasWork = false;
-            TestModule.ClearResult();
-            for (int i = 1; i < ModuleCount; i++)
-            {
-                if (!IsDeviceChecked(i))
-                {
-                    continue;
-                }
-                snrChartTable[i].Invalidate();
-                testParam[i].comPort = (comSelTable[i] as ComboBox).Text;
-                testParam[i].profile = null;
-                //testParam[i].log.Remove(0, testParam[i].log.Length);
 
-                hasWork = true;
-                SetResultDisplay(resultTable[i] as Label, ResultDisplayType.Testing);
-            }
-
-            if (!hasWork)
-            {
-                ErrorMessage.Show(ErrorMessage.Warnings.NoDeviceSelectWarning);
-                return;
-            }
-
-            //EnableButton(false);
-            //startDownload.Enabled = false;
-            TestRunning = TestStatus.Testing;
-            for (int i = 1; i < ModuleCount; i++)
-            {
-                if (!IsDeviceChecked(i))
-                {
-                    continue;
-                }
-                bkWorker[i].RunWorkerAsync(testParam[i]);
-                AddMessage(i, "------------------ Begin Reset Testing ------------------");
-                Thread.Sleep(20);
-            }
-            EnableButton(false);
-            testCounter.Text = resetTesterLogin.TestPeriod.ToString();
-            testCounter.ForeColor = Color.Red;
-            testTimer.Interval = 1000;
-            testTimer.Start();
-        }
-        */
         private void errorMessageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             String errorFile = null;
-            if (Global.functionType == Global.FunctionType.ModuleTest)
-            {
+            //if (Global.functionType == Global.FunctionType.ModuleTest)
+            //{
                 errorFile = Login.loginInfo.currentPath + "\\" + "Error.txt";
-            }
-            else
-            {
-                errorFile = resetTesterLogin.currentPath + "\\" + "Error.txt";
-            }
+            //}
+            //else
+            //{
+            //    errorFile = resetTesterLogin.currentPath + "\\" + "Error.txt";
+            //}
 
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(errorFile))
             {
@@ -2039,95 +1912,6 @@ namespace ModuleTestV8
             notePad.Start();
         }
 
-        private void startOpenPortTest_Click(object sender, EventArgs e)
-        {
-            bool hasWork = false;
-            TestModule.ClearResult();
-            for (int i = 1; i < ModuleCount; i++)
-            {
-                if (!IsDeviceChecked(i))
-                {
-                    continue;
-                }
-                snrChartTable[i].Invalidate();
-                testParam[i].comPort = (comSelTable[i] as ComboBox).Text;
-                testParam[i].profile = null;
-                //testParam[i].log.Remove(0, testParam[i].log.Length);
-
-                hasWork = true;
-                SetResultDisplay(resultTable[i] as Label, ResultDisplayType.Testing);
-            }
-
-            if (!hasWork)
-            {
-                ErrorMessage.Show(ErrorMessage.Warnings.NoDeviceSelectWarning);
-                return;
-            }
-
-            TestRunning = TestStatus.Testing;
-            for (int i = 1; i < ModuleCount; i++)
-            {
-                if (!IsDeviceChecked(i))
-                {
-                    continue;
-                }
-                bkWorker[i].RunWorkerAsync(testParam[i]);
-                AddMessage(i, "------------------ Begin Open Port Testing ------------------");
-                Thread.Sleep(20);
-            }
-            EnableButton(false);
-
-            testCounter.Text = "0";
-            testCounter.ForeColor = Color.Red;
-            openPortTimer.Interval = 1000;
-            openPortTimer.Start();
-        }
-        /*
-        private void startiCacheTest_Click(object sender, EventArgs e)
-        {
-            bool hasWork = false;
-            TestModule.ClearResult();
-            for (int i = 1; i < ModuleCount; i++)
-            {
-                if (!IsDeviceChecked(i))
-                {
-                    continue;
-                }
-                snrChartTable[i].Invalidate();
-                testParam[i].comPort = (comSelTable[i] as ComboBox).Text;
-                testParam[i].profile = null;
-                //testParam[i].log.Remove(0, testParam[i].log.Length);
-
-                hasWork = true;
-                SetResultDisplay(resultTable[i] as Label, ResultDisplayType.Testing);
-            }
-
-            if (!hasWork)
-            {
-                ErrorMessage.Show(ErrorMessage.Warnings.NoDeviceSelectWarning);
-                return;
-            }
-
-            //EnableButton(false);
-            //startDownload.Enabled = false;
-            TestRunning = TestStatus.Testing;
-            for (int i = 1; i < ModuleCount; i++)
-            {
-                if (!IsDeviceChecked(i))
-                {
-                    continue;
-                }
-                bkWorker[i].RunWorkerAsync(testParam[i]);
-                AddMessage(i, "------------------ Begin i-cache testing ------------------");
-                Thread.Sleep(20);
-            }
-            EnableButton(false);
-            testCounter.Text = resetTesterLogin.TestPeriod.ToString();
-            testCounter.ForeColor = Color.Red;
-            testTimer.Interval = 1000;
-            testTimer.Start();
-        }
-        */
         private static int[] cheatCode = { 0x26, 0x26, 0x28, 0x28, 
                 0x25, 0x27, 0x25, 0x27, 0x42, 0x41 };
         private int cheats = 0;
@@ -2152,6 +1936,139 @@ namespace ModuleTestV8
                 }
             }
             return false;
+        }
+
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(int hWnd, uint Msg, int wParam, int lParam);
+
+        [DllImport("user32.dll")]
+        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+
+        private void PressStrsvrButton(bool isStart)
+        {
+            const int BM_CLICK = 0x00F5;
+            IntPtr mainWnd = FindWindow("TMainForm", "STRSVR ver.2.4.3 b29");
+            IntPtr childWnd = FindWindowEx(mainWnd, IntPtr.Zero, "TBitBtn", (isStart) ? "&Start" : "S&top");
+            SendMessage((int)childWnd, BM_CLICK, 0, 0);
+        }
+
+        private void startDownload_Click(object sender, EventArgs e)
+        {
+            PressStrsvrButton(false);
+
+            rp.NewSession(SessionReport.SessionType.Download);
+
+            bool hasWork = false;
+            TestModule.ResetTotalTestCount();
+            TestModule.ResetDrMcuStatus();
+
+            for (int i = 1; i < 5; i++)
+            {
+                if (!IsDeviceChecked(i))
+                {
+                    continue;
+                }
+                snrChartTable[i].Invalidate();
+                testParam[i].comPort = (comSelTable[i] as ComboBox).Text;
+                testParam[i].profile = profile;
+                testParam[i].log.Remove(0, testParam[i].log.Length);
+                testParam[i].annIoPort = (anCtrlSel as ComboBox).Text;
+
+                TestModule.IncreaseTotalTestCount();
+                hasWork = true;
+                SetResultDisplay(resultTable[i] as Label, ResultDisplayType.Downloading);
+            }
+
+            if (!hasWork)
+            {
+                ErrorMessage.Show(ErrorMessage.Warnings.NoDeviceSelectWarning);
+                return;
+            }
+
+            if ((profile.enableSlaveDownload) && (anCtrlSel as ComboBox).Text == "")
+            {
+                MessageBox.Show("Please select MCU COM!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            TestModule.ClearResult((profile.enableDownload && profile.twoUartDownload) ? TestModule.ClearType.Upper : TestModule.ClearType.All);
+            EnableButton(false);
+            TestRunning = TestStatus.Downloading;
+            TestModule.antennaEvent.Set();
+            for (int i = 1; i < ModuleCount; i++)
+            {
+                if (!IsDeviceChecked(i))
+                {
+                    continue;
+                }
+                bkWorker[i].RunWorkerAsync(testParam[i]);
+                AddMessage(i, "-------------------- Begin Download --------------------");
+            }
+
+            startCounting = true;
+            testTimer.Interval = 500;
+            testTimer.Start();
+        }
+
+        private void startDownload2_Click(object sender, EventArgs e)
+        {
+            PressStrsvrButton(false);
+
+            rp.NewSession(SessionReport.SessionType.Download);
+
+            bool hasWork = false;
+            //TestModule.ResetTotalTestCount();
+            //TestModule.ResetDrMcuStatus();
+
+            for (int i = 5; i < ModuleCount; i++)
+            {
+                if (!IsDeviceChecked(i))
+                {
+                    continue;
+                }
+                snrChartTable[i].Invalidate();
+                testParam[i].comPort = (comSelTable[i] as ComboBox).Text;
+                testParam[i].profile = profile;
+                testParam[i].log.Remove(0, testParam[i].log.Length);
+                testParam[i].annIoPort = (anCtrlSel as ComboBox).Text;
+
+                //TestModule.IncreaseTotalTestCount();
+                hasWork = true;
+                SetResultDisplay(resultTable[i] as Label, ResultDisplayType.Downloading);
+            }
+
+            if (!hasWork)
+            {
+                ErrorMessage.Show(ErrorMessage.Warnings.NoDeviceSelectWarning);
+                return;
+            }
+
+            //if ((profile.enableSlaveDownload) && (anCtrlSel as ComboBox).Text == "")
+            //{
+            //    MessageBox.Show("Please select MCU COM!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    return;
+            //}
+
+            TestModule.ClearResult(TestModule.ClearType.Bottom);
+            EnableButton(false);
+            TestRunning = TestStatus.Downloading;
+            //TestModule.antennaEvent.Set();
+            for (int i = 5; i < ModuleCount; i++)
+            {
+                if (!IsDeviceChecked(i))
+                {
+                    continue;
+                }
+                bkWorker[i].RunWorkerAsync(testParam[i]);
+                AddMessage(i, "---------------- Begin Download slave ----------------");
+            }
+
+            startCounting = true;
+            testTimer.Interval = 500;
+            testTimer.Start();
         }
     }
 

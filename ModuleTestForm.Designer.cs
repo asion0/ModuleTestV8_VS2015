@@ -177,12 +177,8 @@
             this.a3TotalCount = new System.Windows.Forms.Label();
             this.a3Yield = new System.Windows.Forms.Label();
             this.label45 = new System.Windows.Forms.Label();
-            this.startResetTest = new System.Windows.Forms.Button();
-            this.startOpenPortTest = new System.Windows.Forms.Button();
-            this.startiCacheTest = new System.Windows.Forms.Button();
             this.anCtrlSel = new System.Windows.Forms.ComboBox();
             this.anCtrlSel_t = new System.Windows.Forms.Label();
-            this.drResetBtn = new System.Windows.Forms.Button();
             this.slaveFirmwareGroup = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -196,6 +192,7 @@
             this.kVer2 = new System.Windows.Forms.Label();
             this.label28 = new System.Windows.Forms.Label();
             this.fw2Baudrate = new System.Windows.Forms.Label();
+            this.startDownload2 = new System.Windows.Forms.Button();
             this.gdPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gdSnrChart)).BeginInit();
             this.a1Panel.SuspendLayout();
@@ -465,9 +462,9 @@
             // testCounter
             // 
             this.testCounter.Font = new System.Drawing.Font("Verdana", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.testCounter.Location = new System.Drawing.Point(376, 30);
+            this.testCounter.Location = new System.Drawing.Point(366, 30);
             this.testCounter.Name = "testCounter";
-            this.testCounter.Size = new System.Drawing.Size(111, 61);
+            this.testCounter.Size = new System.Drawing.Size(131, 61);
             this.testCounter.TabIndex = 5;
             this.testCounter.Text = "0";
             this.testCounter.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -1715,37 +1712,6 @@
             this.label45.TabIndex = 11;
             this.label45.Text = "/";
             // 
-            // startResetTest
-            // 
-            this.startResetTest.Location = new System.Drawing.Point(498, 95);
-            this.startResetTest.Name = "startResetTest";
-            this.startResetTest.Size = new System.Drawing.Size(107, 64);
-            this.startResetTest.TabIndex = 2;
-            this.startResetTest.Text = "Reset Testing";
-            this.startResetTest.UseVisualStyleBackColor = true;
-            this.startResetTest.Visible = false;
-            // 
-            // startOpenPortTest
-            // 
-            this.startOpenPortTest.Location = new System.Drawing.Point(520, 123);
-            this.startOpenPortTest.Name = "startOpenPortTest";
-            this.startOpenPortTest.Size = new System.Drawing.Size(107, 64);
-            this.startOpenPortTest.TabIndex = 2;
-            this.startOpenPortTest.Text = "Open Port Testing";
-            this.startOpenPortTest.UseVisualStyleBackColor = true;
-            this.startOpenPortTest.Visible = false;
-            this.startOpenPortTest.Click += new System.EventHandler(this.startOpenPortTest_Click);
-            // 
-            // startiCacheTest
-            // 
-            this.startiCacheTest.Location = new System.Drawing.Point(510, 107);
-            this.startiCacheTest.Name = "startiCacheTest";
-            this.startiCacheTest.Size = new System.Drawing.Size(107, 64);
-            this.startiCacheTest.TabIndex = 2;
-            this.startiCacheTest.Text = "i-Cache Testing";
-            this.startiCacheTest.UseVisualStyleBackColor = true;
-            this.startiCacheTest.Visible = false;
-            // 
             // anCtrlSel
             // 
             this.anCtrlSel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -1766,16 +1732,6 @@
             this.anCtrlSel_t.TabIndex = 2;
             this.anCtrlSel_t.Text = "MCU COM :";
             this.anCtrlSel_t.Visible = false;
-            // 
-            // drResetBtn
-            // 
-            this.drResetBtn.Location = new System.Drawing.Point(390, 93);
-            this.drResetBtn.Name = "drResetBtn";
-            this.drResetBtn.Size = new System.Drawing.Size(95, 23);
-            this.drResetBtn.TabIndex = 12;
-            this.drResetBtn.Text = "DR Reset";
-            this.drResetBtn.UseVisualStyleBackColor = true;
-            this.drResetBtn.Visible = false;
             // 
             // slaveFirmwareGroup
             // 
@@ -1913,12 +1869,23 @@
             this.fw2Baudrate.TabIndex = 0;
             this.fw2Baudrate.Text = "0";
             // 
+            // startDownload2
+            // 
+            this.startDownload2.Enabled = false;
+            this.startDownload2.Location = new System.Drawing.Point(490, 60);
+            this.startDownload2.Name = "startDownload2";
+            this.startDownload2.Size = new System.Drawing.Size(96, 30);
+            this.startDownload2.TabIndex = 2;
+            this.startDownload2.Text = "Download Slave";
+            this.startDownload2.UseVisualStyleBackColor = true;
+            this.startDownload2.Visible = false;
+            this.startDownload2.Click += new System.EventHandler(this.startDownload2_Click);
+            // 
             // ModuleTestForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1066, 627);
-            this.Controls.Add(this.drResetBtn);
             this.Controls.Add(this.label21);
             this.Controls.Add(this.label45);
             this.Controls.Add(this.label41);
@@ -1960,12 +1927,9 @@
             this.Controls.Add(this.slaveFirmwareGroup);
             this.Controls.Add(this.firmwareGroup);
             this.Controls.Add(this.settingGroup);
-            this.Controls.Add(this.testCounter);
             this.Controls.Add(this.cancel);
+            this.Controls.Add(this.startDownload2);
             this.Controls.Add(this.startDownload);
-            this.Controls.Add(this.startOpenPortTest);
-            this.Controls.Add(this.startiCacheTest);
-            this.Controls.Add(this.startResetTest);
             this.Controls.Add(this.startTesting);
             this.Controls.Add(this.b4Panel);
             this.Controls.Add(this.b3Panel);
@@ -1986,6 +1950,7 @@
             this.Controls.Add(this.a1Disable);
             this.Controls.Add(this.gdDisable);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.testCounter);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -2184,13 +2149,9 @@
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem generateReportToolStripMenuItem;
-        private System.Windows.Forms.Button startResetTest;
         private System.Windows.Forms.ToolStripMenuItem errorMessageToolStripMenuItem;
-        private System.Windows.Forms.Button startOpenPortTest;
-        private System.Windows.Forms.Button startiCacheTest;
         private System.Windows.Forms.ComboBox anCtrlSel;
         private System.Windows.Forms.Label anCtrlSel_t;
-        private System.Windows.Forms.Button drResetBtn;
         private System.Windows.Forms.GroupBox slaveFirmwareGroup;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
@@ -2204,6 +2165,7 @@
         private System.Windows.Forms.Label kVer2;
         private System.Windows.Forms.Label label28;
         private System.Windows.Forms.Label fw2Baudrate;
+        private System.Windows.Forms.Button startDownload2;
     }
 }
 

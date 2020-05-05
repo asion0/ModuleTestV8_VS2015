@@ -102,6 +102,14 @@ namespace ModuleTestV8
             NavSpark,
             NavSparkMini
         }
+        //Testing
+        public enum TestFixType
+        {
+            PositionFix,
+            RtkFloat,
+            RtkFix,
+            RtkFixRatio10,
+        }
 
         public bool testIo { get; set; }
         public IoType testIoType { get; set; }
@@ -110,6 +118,8 @@ namespace ModuleTestV8
         public bool enableDownload { get; set; }
         public bool enableSlaveDownload { get; set; }
         public int dlBaudSel { get; set; }
+        public bool twoUartDownload { get; set; }
+        
 
         //public bool testBootStatus { get; set; }
         public bool checkPromCrc { get; set; }
@@ -152,8 +162,9 @@ namespace ModuleTestV8
         //Support reverse roation
         public bool reverseRotation { get; set; }
         //For V827 module S1216DR8P, S1216RTK
-        public bool testToRtkFloat { get; set; }
-        public bool testToRtkFix { get; set; }
+        //public bool testToRtkFloat { get; set; }
+        //public bool testToRtkFix { get; set; }
+        public TestFixType testFixedType { get; set; }
 
         public class FirmwareProfile
         {
@@ -287,7 +298,7 @@ namespace ModuleTestV8
 
         public bool IsNeedSlavePromIniFile()
         {
-            return (enableSlaveDownload || checkSlavePromCrc);
+            return (enableSlaveDownload || checkSlavePromCrc || twoUartDownload);
         }
 
         public bool ReadeSlavePromIniFile()
@@ -458,6 +469,8 @@ namespace ModuleTestV8
             enableDownload = r.enableDownload;
             enableSlaveDownload = r.enableSlaveDownload;
             dlBaudSel = r.dlBaudSel;
+            twoUartDownload = r.twoUartDownload;
+
             checkPromCrc = r.checkPromCrc;
             checkSlavePromCrc = r.checkSlavePromCrc;
             checkRtc = r.checkRtc;
@@ -500,9 +513,9 @@ namespace ModuleTestV8
             //Support reverse roation
             reverseRotation = r.reverseRotation;
             //For V827 module S1216DR8P, S1216RTK
-            testToRtkFloat = r.testToRtkFloat;
-            testToRtkFix = r.testToRtkFix;
-
+            //testToRtkFloat = r.testToRtkFloat;
+            //testToRtkFix = r.testToRtkFix;
+            testFixedType = r.testFixedType;
     }
 
     [DllImport("kernel32", CharSet = CharSet.Unicode)]
@@ -655,6 +668,9 @@ namespace ModuleTestV8
             enableDownload = Convert.ToBoolean(temp.ToString());
             GetPrivateProfileString("Testing", "Enable_Slave_Download", "False", temp, MaxReadLength, path);
             enableSlaveDownload = Convert.ToBoolean(temp.ToString());
+            GetPrivateProfileString("Testing", "Two_Uart_Download", "False", temp, MaxReadLength, path);
+            twoUartDownload = Convert.ToBoolean(temp.ToString());
+
             GetPrivateProfileString("Testing", "Download_Baud_Rate", InitDownloadBaudrate.ToString(), temp, MaxReadLength, path);
             dlBaudSel = Convert.ToInt32(temp.ToString());
             GetPrivateProfileString("Testing", "Test_Io", "False", temp, MaxReadLength, path);
@@ -746,10 +762,12 @@ namespace ModuleTestV8
             GetPrivateProfileString("Testing", "Reverse_Rotation", "True", temp, MaxReadLength, path);
             reverseRotation = Convert.ToBoolean(temp.ToString());
             //For V827 module S1216DR8P, S1216RTK
-            GetPrivateProfileString("Testing", "Test_To_Rtk_Float", "False", temp, MaxReadLength, path);
-            testToRtkFloat = Convert.ToBoolean(temp.ToString());
-            GetPrivateProfileString("Testing", "Test_To_Rtk_Fix", "False", temp, MaxReadLength, path);
-            testToRtkFix = Convert.ToBoolean(temp.ToString());
+            //GetPrivateProfileString("Testing", "Test_To_Rtk_Float", "False", temp, MaxReadLength, path);
+            //testToRtkFloat = Convert.ToBoolean(temp.ToString());
+            //GetPrivateProfileString("Testing", "Test_To_Rtk_Fix", "False", temp, MaxReadLength, path);
+            //testToRtkFix = Convert.ToBoolean(temp.ToString());
+            GetPrivateProfileString("Testing", "Test_Fixed_Type", "0", temp, MaxReadLength, path);
+            testFixedType = (TestFixType)Convert.ToInt32(temp.ToString());
 
             return true;
         }
@@ -834,6 +852,8 @@ namespace ModuleTestV8
             WritePrivateProfileString("Testing", "Test_UART2_TXRX", testUart2TxRx.ToString(), path);
             WritePrivateProfileString("Testing", "Enable_Download", enableDownload.ToString(), path);
             WritePrivateProfileString("Testing", "Enable_Slave_Download", enableSlaveDownload.ToString(), path);
+            WritePrivateProfileString("Testing", "Two_Uart_Download", twoUartDownload.ToString(), path);
+
             WritePrivateProfileString("Testing", "Download_Baud_Rate", dlBaudSel.ToString(), path);
             WritePrivateProfileString("Testing", "Check_Prom_Crc", checkPromCrc.ToString(), path);
             WritePrivateProfileString("Testing", "Check_Slave_Prom_Crc", checkSlavePromCrc.ToString(), path);
@@ -877,8 +897,9 @@ namespace ModuleTestV8
             //Support reverse roation
             WritePrivateProfileString("Testing", "Reverse_Rotation", reverseRotation.ToString(), path);
             //For V827 module S1216DR8P, S1216RTK
-            WritePrivateProfileString("Testing", "Test_To_Rtk_Float", testToRtkFloat.ToString(), path);
-            WritePrivateProfileString("Testing", "Test_To_Rtk_Fix", testToRtkFix.ToString(), path);
+            //WritePrivateProfileString("Testing", "Test_To_Rtk_Float", testToRtkFloat.ToString(), path);
+            //WritePrivateProfileString("Testing", "Test_To_Rtk_Fix", testToRtkFix.ToString(), path);
+            WritePrivateProfileString("Testing", "Test_Fixed_Type", ((int)testFixedType).ToString(), path);
 
             String vKey = GetVerification(path, true);
             WritePrivateProfileString("Verification", "Key", vKey, path);
@@ -923,6 +944,7 @@ namespace ModuleTestV8
 
             itemData.SetAttribute("ED", enableDownload.ToString());
             itemData.SetAttribute("ESD", enableSlaveDownload.ToString());
+            itemData.SetAttribute("TUD", twoUartDownload.ToString());
             itemData.SetAttribute("DB", dlBaudSel.ToString());
             itemData.SetAttribute("CPC", checkPromCrc.ToString());
             itemData.SetAttribute("CSC", checkSlavePromCrc.ToString());
@@ -967,9 +989,10 @@ namespace ModuleTestV8
             //Support reverse roation
             itemData.SetAttribute("RRO", reverseRotation.ToString());
             //For V827 module S1216DR8P, S1216RTK
-            itemData.SetAttribute("TTL", testToRtkFloat.ToString());
-            itemData.SetAttribute("TTI", testToRtkFix.ToString());
-
+            //itemData.SetAttribute("TTL", testToRtkFloat.ToString());
+            //itemData.SetAttribute("TTI", testToRtkFix.ToString());
+            itemData.SetAttribute("TFT", ((int)testFixedType).ToString());
+            
             Crc32 crc32 = new Crc32();
             XmlElement itemKey = doc.CreateElement("ItemKey");
             itemKey.SetAttribute("Key", crc32.ComputeChecksum(itemData.OuterXml).ToString());

@@ -85,7 +85,7 @@ namespace ModuleTestV8
             TestErr10 = 1UL << 64,
         }
 
-        public const int ErrorCount = 61;
+        public const int ErrorCount = 62;
         public static String GetErrorString(ErrorType er)
         {
             if (ErrorType.NoError == er)

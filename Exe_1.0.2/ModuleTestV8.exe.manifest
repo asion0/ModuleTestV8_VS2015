@@ -4,7 +4,7 @@
   <description asmv2:iconFile="Icons\ModuleTest.ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="ModuleTestV8" version="1.0.2.77" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="ModuleTestV8" version="1.0.2.84" language="neutral" processorArchitecture="msil" />
     <commandLine file="ModuleTestV8.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -14,18 +14,18 @@
         <defaultAssemblyRequest permissionSetReference="Custom" />
       </applicationRequestMinimum>
       <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
-        <!--
-          UAC 資訊清單選項
-          如果您要變更 Windows 使用者帳戶控制層級，請將 
-          requestedExecutionLevel 節點取代為下列其中一項。
+        <!-- UAC 資訊清單選項
+             如果要變更 Windows 使用者帳戶控制層級，請將 
+             requestedExecutionLevel 節點以下列其中之一取代。
 
         <requestedExecutionLevel  level="asInvoker" uiAccess="false" />
         <requestedExecutionLevel  level="requireAdministrator" uiAccess="false" />
         <requestedExecutionLevel  level="highestAvailable" uiAccess="false" />
 
-         如果您要利用檔案及登錄模擬，
-         以便提供回溯相容性，則請刪除 requestedExecutionLevel 節點。
-    -->
+            指定 requestedExecutionLevel 項目會停用檔案及登錄虛擬化。
+            如果您的應用程式需要針對回溯相容性進行這項虛擬化，請移除這個
+            項目。
+        -->
         <requestedExecutionLevel level="asInvoker" uiAccess="false" />
       </requestedPrivileges>
     </security>
@@ -40,6 +40,21 @@
   <dependency>
     <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
       <assemblyIdentity name="Microsoft.Windows.CommonLanguageRuntime" version="4.0.30319.0" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="NationalInstruments.Common" version="15.1.40.49152" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="NationalInstruments.MStudioCLM" version="15.1.40.49152" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="NationalInstruments.NiLmClientDLL" version="15.1.40.49152" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
     </dependentAssembly>
   </dependency>
   <dependency>
@@ -91,50 +106,38 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ModuleTestV8.exe" size="1524224">
-      <assemblyIdentity name="ModuleTestV8" version="1.0.2.77" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ModuleTestV8.exe" size="1508352">
+      <assemblyIdentity name="ModuleTestV8" version="1.0.2.84" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>Q4PHdG0Sq22iznI3Mw3x4Y20h2M=</dsig:DigestValue>
+        <dsig:DigestValue>0seMvcF8XmW/lppmhpvxh2tgH2s=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="en\ModuleTestV8.resources.dll" size="5120">
-      <assemblyIdentity name="ModuleTestV8.resources" version="1.0.2.77" language="en" processorArchitecture="msil" />
+      <assemblyIdentity name="ModuleTestV8.resources" version="1.0.2.84" language="en" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>eL44A/UnKnywKP3wZGEJD/9ZiVw=</dsig:DigestValue>
+        <dsig:DigestValue>XDj6bMvL+UOB22xDuBV7n8eqGmM=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="zh-TW\ModuleTestV8.resources.dll" size="5120">
-      <assemblyIdentity name="ModuleTestV8.resources" version="1.0.2.77" language="zh-TW" processorArchitecture="msil" />
+      <assemblyIdentity name="ModuleTestV8.resources" version="1.0.2.84" language="zh-TW" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>W72EbMXl6a2n7lCJVS0jtdxOQlE=</dsig:DigestValue>
-      </hash>
-    </dependentAssembly>
-  </dependency>
-  <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="NationalInstruments.Common.dll" size="724992">
-      <assemblyIdentity name="NationalInstruments.Common" version="15.1.40.49152" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
-      <hash>
-        <dsig:Transforms>
-          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-        </dsig:Transforms>
-        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>5T+xqGjrIdCvWIvkR+e7lMd7mIM=</dsig:DigestValue>
+        <dsig:DigestValue>4PpoxxOdZs3YRdAjOXPR7OifxP8=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -147,30 +150,6 @@
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
         <dsig:DigestValue>Akg726VtuiTyv8vaskkb1Jn/CWM=</dsig:DigestValue>
-      </hash>
-    </dependentAssembly>
-  </dependency>
-  <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="NationalInstruments.MStudioCLM.dll" size="4608">
-      <assemblyIdentity name="NationalInstruments.MStudioCLM" version="15.1.40.49152" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
-      <hash>
-        <dsig:Transforms>
-          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-        </dsig:Transforms>
-        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>8kLzkjnvPb9nSBwyV2hJIZNjMkg=</dsig:DigestValue>
-      </hash>
-    </dependentAssembly>
-  </dependency>
-  <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="NationalInstruments.NiLmClientDLL.dll" size="30208">
-      <assemblyIdentity name="NationalInstruments.NiLmClientDLL" version="15.1.40.49152" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
-      <hash>
-        <dsig:Transforms>
-          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-        </dsig:Transforms>
-        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>DPqGNhe5SutkC/ti2dzHnr+v5VY=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -270,4 +249,21 @@
       <dsig:DigestValue>hcXxecOzA5GN88e62CSY8+Ipzxs=</dsig:DigestValue>
     </hash>
   </file>
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <!-- 這個應用程式測試所在及可配合使用的
+           Windows 版本清單。請取消註解適當的項目，Windows 將會
+           自動選取最相容的環境。-->
+      <!-- Windows Vista -->
+      <!--<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}" />-->
+      <!-- Windows 7 -->
+      <!--<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}" />-->
+      <!-- Windows 8 -->
+      <!--<supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}" />-->
+      <!-- Windows 8.1 -->
+      <!--<supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}" />-->
+      <!-- Windows 10 -->
+      <!--<supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />-->
+    </application>
+  </compatibility>
 </asmv1:assembly>

@@ -20,8 +20,10 @@ namespace ModuleTestV8
         {
             public const int MaxSattellite = 24;
             public const int MaxChannels = 12;
-            public const int NavicChannelStart = 16;
-            public const int MaxNavicChannels = 24;
+            //Navic change start channel from 0, request from Terrance 20181002
+            //for (int i = GpsMsgParser.ParsingStatus.NavicChannelStart; i < GpsMsgParser.ParsingStatus.MaxNavicChannels; ++i)
+            //public const int NavicChannelStart = 0;
+            //public const int MaxNavicChannels = 24;
             public const int NullValue = int.MinValue;
 
             public ParsingStatus()
@@ -268,9 +270,9 @@ namespace ModuleTestV8
                 switch (positionFixResult)
                 {
                     case 4:
-                        return "RTK Fix";
+                        return "Fix RTK";
                     case 5:
-                        return "Rtk Float";
+                        return "Float RTK";
                     case 2:
                         return "DGPS";
                     case 1:
@@ -303,6 +305,7 @@ namespace ModuleTestV8
             public String dateString = "";
             public String timeString = "";
             public String altitudeString = "";
+            public double rtkRatio = 0;
 
             private SateType GetTypeByPrn(int prn)
             {
@@ -682,6 +685,7 @@ namespace ModuleTestV8
             UpdateSate = 1UL << 2,
             UpdateLocation = 1UL << 3,
             UpdateFixMode = 1UL << 4,
+            UpdateRtkRatio = 1UL << 5,
 
             Reboot,
         }
@@ -923,6 +927,10 @@ namespace ModuleTestV8
             {
                 return ParsingPsti50(param, t);
             }
+            else if (param[1] == "030")
+            {
+                return ParsingPsti030(param, t);
+            }
             return ParsingResult.None;
         }
 
@@ -964,6 +972,25 @@ namespace ModuleTestV8
                 totalGsv = -1;
                 lastGsv = -1;
                 return ParsingResult.UpdateSate;
+            }
+            return ParsingResult.None;
+        }
+
+        private ParsingResult ParsingPsti030(String[] param, NmeaTypeIdentify.NmeaType t)
+        {
+            if (param.Length < 16)
+            {
+                return ParsingResult.None;
+            }
+
+            if (param[15].Length > 0)
+            {
+                double ratio = Convert.ToDouble(param[15]);
+                if (parsingStat.rtkRatio != ratio)
+                {
+                    parsingStat.rtkRatio = ratio;
+                    return ParsingResult.UpdateRtkRatio;
+                }
             }
             return ParsingResult.None;
         }

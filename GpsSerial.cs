@@ -239,7 +239,6 @@ namespace ModuleTestV8
             sw.Reset();
             sw.Start();
             int index = 0;
-            int packetLen = 0;
             byte[] correctAck = { 0xa0, 0xa1, 0x00, 0x04, 0x83, 0x7a, 0x08, 0x01, 0xf0, 0x0d, 0x0a };
             int ackIdx = 0;
             while (sw.ElapsedMilliseconds < timeout)
@@ -823,6 +822,32 @@ namespace ModuleTestV8
             return retval;
         }
 
+        public GPS_RESPONSE TestDevice2(int timeout, int retry)
+        {
+            GPS_RESPONSE retval = GPS_RESPONSE.NONE;
+            byte[] cmdData = new byte[10];
+            cmdData[0] = 0xA0;
+            cmdData[1] = 0xA1;
+            cmdData[2] = 0x00;
+            cmdData[3] = 0x03;
+            cmdData[4] = 0x09;
+            cmdData[5] = 0x00;
+            cmdData[6] = 0x00;
+            cmdData[7] = 0x09;
+            cmdData[8] = 0x0D;
+            cmdData[9] = 0x0A;
+
+            for (int i = 0; i < retry; ++i)
+            {
+                retval = SendCmdAck(cmdData, cmdData.Length, timeout);
+                if (GPS_RESPONSE.NACK == retval)
+                {
+                    break;
+                }
+            }
+            return retval;
+        }
+
         public GPS_RESPONSE ConfigNmeaOutput(byte gga, byte gsa, byte gsv, byte gll, byte rmc, byte vtg, byte zda, byte attr)
         {
             GPS_RESPONSE retval = GPS_RESPONSE.NONE;
@@ -923,6 +948,31 @@ namespace ModuleTestV8
                     break;
                 }
             }
+            return retval;
+        }
+
+        public GPS_RESPONSE SendHotStart(int timeout, Int16 lat, Int16 lon, Int16 alt, DateTime time)
+        {
+            GPS_RESPONSE retval = GPS_RESPONSE.NONE;
+            byte[] cmdData = new byte[15];
+            cmdData[0] = 0x01;
+            cmdData[1] = 0x01;  //Start Mode, 01=Hot start, 02=Warm start, 03=Cold start
+            cmdData[2] = (byte)((time.Year >> 8) & 0xFF);
+            cmdData[3] = (byte)(time.Year & 0xFF);
+            cmdData[4] = (byte)(time.Month & 0xFF);
+            cmdData[5] = (byte)(time.Day & 0xFF);
+            cmdData[6] = (byte)(time.Hour & 0xFF);
+            cmdData[7] = (byte)(time.Minute & 0xFF);
+            cmdData[8] = (byte)(time.Second & 0xFF);
+            cmdData[9] = (byte)((lat >> 8) & 0xFF);
+            cmdData[10] = (byte)(lat & 0xFF);
+            cmdData[11] = (byte)((lon >> 8) & 0xFF);
+            cmdData[12] = (byte)(lon & 0xFF);
+            cmdData[13] = (byte)((alt >> 8) & 0xFF);
+            cmdData[14] = (byte)(alt & 0xFF);
+
+            BinaryCommand cmd = new BinaryCommand(cmdData);
+            retval = SendCmdAck(cmd.GetBuffer(), cmd.Size(), timeout);
             return retval;
         }
 
@@ -1503,6 +1553,180 @@ namespace ModuleTestV8
             else
                 retval = SendCmdAckForPassthroughBack(cmd.GetBuffer(), cmd.Size(), 2000, 3);
 
+            return retval;
+        }
+
+        public enum Attributes
+        {
+            Sram = 0,
+            SramAndFlash = 1,
+            Temporarily = 2
+        }
+
+        public class RtkModeInfo
+        {
+            static public RtkModeInfo GetRoverNormalSetting()
+            {
+                RtkModeInfo r = new RtkModeInfo();
+                r.rtkMode = RtkMode.RTK_Rover;
+                r.optMode = RtkOperationMode.Rover_Normal;
+                return r;
+            }
+
+            public RtkModeInfo()
+            {
+            }
+
+            public RtkModeInfo(RtkModeInfo r)
+            {
+                rtkMode = r.rtkMode;
+                optMode = r.optMode;
+                baselineLength = r.baselineLength;
+                surveyLength = r.surveyLength;
+                surveyStdDivThr = r.surveyStdDivThr;
+                savedLat = r.savedLat;
+                savedLon = r.savedLon;
+                savedAlt = r.savedAlt;
+                runtimeOptMode = r.runtimeOptMode;
+                runtimeSurveyLength = r.runtimeSurveyLength;
+            }
+
+            public enum RtkMode
+            {
+                None = -1,
+                RTK_Rover = 0,
+                RTK_Base = 1,
+                RTK_Advance_Moving_Base = 2,
+            }
+
+            public RtkMode rtkMode = RtkMode.None;
+            public string GetRtkModeString(RtkMode rm)
+            {
+                if (rtkMode == RtkMode.RTK_Base)
+                {
+                    return "RTK Base Mode";
+                }
+                else if (rtkMode == RtkMode.RTK_Rover)
+                {
+                    return "RTK Rover Mode";
+                }
+                return "------";
+            }
+
+            public enum RtkOperationMode
+            {
+                None = -1,
+                Base_Kinematic = 0,
+                Base_Survey = 1,
+                Base_Static = 2,
+                Rover_Normal = 0,
+                Rover_Float = 1,
+                Rover_MovingBase = 2,
+                AMB_Normal = 0,
+                AMB_Float = 1,
+            }
+            public RtkOperationMode optMode = RtkOperationMode.None;
+            //For Rover only
+            public UInt32 baselineLength = 0;
+
+            //For Base only
+            public UInt32 surveyLength = 0;
+            public UInt32 surveyStdDivThr = 0;
+
+            //For Base, Static operation
+            public double savedLat;
+            public double savedLon;
+            public float savedAlt;
+
+            //For Base
+            public RtkOperationMode runtimeOptMode = RtkOperationMode.None;
+            public string GetOperationModeString(RtkOperationMode op)
+            {
+                if (rtkMode == RtkMode.RTK_Base)
+                {
+                    switch (op)
+                    {
+                        case RtkOperationMode.Base_Kinematic:
+                            return "Kinematic";
+                        case RtkOperationMode.Base_Static:
+                            return "Static";
+                        case RtkOperationMode.Base_Survey:
+                            return "Survey";
+                    }
+                }
+                else if (rtkMode == RtkMode.RTK_Rover)
+                {
+                    switch (op)
+                    {
+                        case RtkOperationMode.Rover_Normal:
+                            return "Normal";
+                        case RtkOperationMode.Rover_Float:
+                            return "Float";
+                        case RtkOperationMode.Rover_MovingBase:
+                            return "Moving Base";
+                    }
+                }
+                return "------";
+            }
+
+            public UInt32 runtimeSurveyLength = 0;
+
+            //ToString
+            public override string ToString()
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendFormat("RtkMode:{0}\n", rtkMode.ToString());
+                sb.AppendFormat("OpMode:{0}\n", optMode.ToString());
+                sb.AppendFormat("BaselineLen:{0}\n", baselineLength.ToString());
+                sb.AppendFormat("SurveyLen:{0}\n", surveyLength.ToString());
+                sb.AppendFormat("SurveyStdDivThr:{0}\n", surveyStdDivThr.ToString());
+                sb.AppendFormat("SavedLat:{0}\n", savedLat.ToString());
+                sb.AppendFormat("SavedLon:{0}\n", savedLon.ToString());
+                sb.AppendFormat("SavedAlt:{0}\n", savedAlt.ToString());
+                sb.AppendFormat("RuntimeOpMode:{0}\n", runtimeOptMode.ToString());
+                sb.AppendFormat("RuntimeSurveyLen:{0}\n", runtimeSurveyLength.ToString());
+
+                return sb.ToString();
+            }
+        }
+
+        public GPS_RESPONSE ConfigRtkModeAndOptFunction(int timeout, RtkModeInfo rtkInfo, Attributes att)
+        {
+            GPS_RESPONSE retval = GPS_RESPONSE.NONE;
+            byte[] tmp;
+            byte[] cmdData = new byte[37];
+            cmdData[0] = 0x6A;
+            cmdData[1] = 0x06;
+            cmdData[2] = (byte)rtkInfo.rtkMode;
+            cmdData[3] = (byte)rtkInfo.optMode;
+            //Base mode, Survey opt, Survey Length
+            tmp = BitConverter.GetBytes(rtkInfo.surveyLength);
+            Array.Reverse(tmp);
+            Array.Copy(tmp, 0, cmdData, 4, 4);
+            //Base mode, Survey opt, Standard Deviation
+            tmp = BitConverter.GetBytes(rtkInfo.surveyStdDivThr);
+            Array.Reverse(tmp);
+            Array.Copy(tmp, 0, cmdData, 8, 4);
+            //Base mode, Static opt, Lat
+            tmp = BitConverter.GetBytes(rtkInfo.savedLat);
+            Array.Reverse(tmp);
+            Array.Copy(tmp, 0, cmdData, 12, 8);
+            //Base mode, Static opt, Lon
+            tmp = BitConverter.GetBytes(rtkInfo.savedLon);
+            Array.Reverse(tmp);
+            Array.Copy(tmp, 0, cmdData, 20, 8);
+            //Base mode, Static opt, Lat
+            tmp = BitConverter.GetBytes(rtkInfo.savedAlt);
+            Array.Reverse(tmp);
+            Array.Copy(tmp, 0, cmdData, 28, 4);
+            //Base mode, Kinematic opt, Baseline length constraint
+            tmp = BitConverter.GetBytes(0F);
+            Array.Reverse(tmp);
+            Array.Copy(tmp, 0, cmdData, 32, 4);
+
+            cmdData[36] = (byte)att;
+            BinaryCommand cmd = new BinaryCommand(cmdData);
+            retval = SendCmdAck(cmd.GetBuffer(), cmd.Size(), timeout);
             return retval;
         }
 

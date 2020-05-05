@@ -104,6 +104,7 @@ namespace ModuleTestV8
             enableDownload.Checked = profile.enableDownload;
             dlBaudSel.SelectedIndex = profile.dlBaudSel;
             enableSlaveDownload.Checked = profile.enableSlaveDownload;
+            twoUartDownload.Checked = profile.twoUartDownload;
             slaveIniFileName.Text = profile.slaveIniFileName;
 
             //Test Module
@@ -218,8 +219,9 @@ namespace ModuleTestV8
             //Support reverse roation
             reverseRotation.Checked = profile.reverseRotation;
             //For V827 module S1216DR8P, S1216RTK
-            testToRtkFloat.Checked = profile.testToRtkFloat;
-            testToRtkFix.Checked = profile.testToRtkFix;
+            //testToRtkFloat.Checked = profile.testToRtkFloat;
+            //testToRtkFix.Checked = profile.testToRtkFix;
+            testFixedType.SelectedIndex = (int)profile.testFixedType;
         }
 
         private void UpdateStstus()
@@ -276,6 +278,7 @@ namespace ModuleTestV8
             dlBaudSel.Enabled = enableDownload.Checked;
             slaveIniFileName.Enabled = enableSlaveDownload.Checked;
             browseSlaveIni.Enabled = enableSlaveDownload.Checked;
+            twoUartDownload.Enabled = enableSlaveDownload.Checked;
             ioTypeCombo.Enabled = testIo.Checked;
             clockOffsetThreshold.Enabled = testClockOffset.Checked;
             writeClockOffset.Enabled = testClockOffset.Checked;
@@ -915,14 +918,19 @@ namespace ModuleTestV8
             }
         }
 
-        private void testToRtkFloat_CheckedChanged(object sender, EventArgs e)
-        {
-            profile.testToRtkFloat = (sender as CheckBox).Checked;
-        }
+        //private void testToRtkFloat_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    profile.testToRtkFloat = (sender as CheckBox).Checked;
+        //}
 
-        private void testToRtkFix_CheckedChanged(object sender, EventArgs e)
+        //private void testToRtkFix_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    profile.testToRtkFix= (sender as CheckBox).Checked;
+        //}
+
+        private void testFixedType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            profile.testToRtkFix= (sender as CheckBox).Checked;
+            profile.testFixedType = (ModuleTestProfile.TestFixType)(sender as ComboBox).SelectedIndex;
         }
 
         private void enableSlaveDownload_CheckedChanged(object sender, EventArgs e)
@@ -954,6 +962,12 @@ namespace ModuleTestV8
         private void reverseRotation_CheckedChanged(object sender, EventArgs e)
         {
             profile.reverseRotation = (sender as CheckBox).Checked;
+        }
+
+        private void twoUartDownload_CheckedChanged(object sender, EventArgs e)
+        {
+            profile.twoUartDownload = (sender as CheckBox).Checked;
+            UpdateStstus();
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using System.IO;
 using System.Xml;
+using System.Runtime.InteropServices;
 
 namespace ModuleTestV8
 {
@@ -26,6 +27,7 @@ namespace ModuleTestV8
                 itemData.SetAttribute("FT", FirstTest.ToString());
                 itemData.SetAttribute("FN", FixtureNumber.ToString());
                 itemData.SetAttribute("LT", loginTime.ToString("u"));
+                itemData.SetAttribute("VR", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
                 item.AppendChild(itemData);
 
                 Crc32 crc32 = new Crc32();
@@ -76,6 +78,8 @@ namespace ModuleTestV8
             }
             //Alex add for test
             //testBtn.Visible = true;
+
+            this.Text = this.Text + " - " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
 
         private void profileSelect_Click(object sender, EventArgs e)
@@ -197,11 +201,22 @@ namespace ModuleTestV8
             loginInfo.FixtureNumber = (sender as ComboBox).SelectedIndex;
         }
 
+        bool isStart = true;
         private void test_Click(object sender, EventArgs e)
         {
+            //if (isStart)
+            //{
+            //    PressStrsvrButton(true);
+            //    isStart = false;
+            //}
+            //else
+            //{
+            //    PressStrsvrButton(false);
+            //    isStart = true;
+            //}
             //while (Test())
             //{
-                
+
             //};
             //return;
 

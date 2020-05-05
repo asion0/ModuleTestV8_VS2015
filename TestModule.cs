@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace ModuleTestV8
 {
@@ -12,14 +13,31 @@ namespace ModuleTestV8
         private const int ScanBaudCount = 2;
         public static GpsMsgParser.ParsingStatus[] dvResult;
         public static UInt32 gdClockOffset = 0;
-        public static void ClearResult()
+        public enum ClearType
+        {
+            All,
+            Upper,
+            Bottom
+        }
+
+        public static void ClearResult(ClearType ct)
         {
             if (dvResult == null)
             {
                 return;
             }
 
-            for (int i = 0; i < ModuleTestForm.ModuleCount; i++)
+            int start = 0;
+            int limit = ModuleTestForm.ModuleCount;
+            if(ct == ClearType.Upper)
+            {
+                limit = 5;
+            }
+            if(ct == ClearType.Bottom)
+            {
+                start = 5;
+            }
+            for (int i = start; i < limit; ++i)
             {
                 dvResult[i].ClearAllSate();
                 dvResult[i].SetPositionFixResult(0);
@@ -164,7 +182,6 @@ namespace ModuleTestV8
             if (!IncreaseWaitingCount())
             {
                 int waitCount = timeCount;
-                //Thread.Sleep(rand.Next(0, 200));
                 while (!controllerEvent.WaitOne(10))
                 {
                     if (--waitCount <= 0)
@@ -175,6 +192,7 @@ namespace ModuleTestV8
             }
             r.output = "After WaitOn.";
             p.bw.ReportProgress(0, new WorkerReportParam(r));
+            Thread.Sleep(100);
         }
 
         static int motoPosition = 0;
@@ -607,6 +625,48 @@ namespace ModuleTestV8
             }
             return true;
         }
+        private bool DoHotStart(WorkerParam p, WorkerReportParam r, int timeout)
+        {
+            Int32 ts = 0, ds = 0;
+            if (p.parser.parsingStat.dateString.Length > 0)
+            {
+                ds = Convert.ToInt32(p.parser.parsingStat.dateString);
+            }
+            else
+            {
+                ds = DateTime.UtcNow.Year * 10000 + DateTime.UtcNow.Month * 100 + DateTime.UtcNow.Day;
+            }
+
+            if (p.parser.parsingStat.timeString.Length > 0)
+            {
+                ts = Convert.ToInt32(p.parser.parsingStat.timeString.Split('.')[0]);
+            }
+            else
+            {
+                ts = DateTime.UtcNow.Hour * 10000 + DateTime.UtcNow.Minute * 100 + DateTime.UtcNow.Second;
+            }
+
+            DateTime t = new DateTime(2000 + ds / 10000, (ds / 100) % 100, ds % 100,
+                ts / 10000, (ts / 100) % 100, ts % 100);
+
+            Int16 lat = 2400, lon = 12100, alt = 0;
+            //SendHotStart(int timeout, Int16 lat, Int16 lon, Int16 alt, DateTime time)
+            GPS_RESPONSE rep = p.gps.SendHotStart(timeout, lat, lon, alt, t);
+            if (GPS_RESPONSE.ACK == rep)
+            {
+                r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                r.output = "Hot start successfully";
+                p.bw.ReportProgress(0, new WorkerReportParam(r));
+                return true;
+            }
+            else
+            {
+                r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                r.output = "Hot start failed!";
+                p.bw.ReportProgress(0, new WorkerReportParam(r));
+            }
+            return false;
+        }
 
         private bool DoColdStart(WorkerParam p, WorkerReportParam r, int retry)
         {
@@ -903,6 +963,26 @@ namespace ModuleTestV8
             }
             return true;
         }
+        
+        private bool DoConfigureRtkMode(WorkerParam p, WorkerReportParam r)
+        {
+            SkytraqGps.RtkModeInfo rtkInfo = new SkytraqGps.RtkModeInfo();
+            rtkInfo.rtkMode = SkytraqGps.RtkModeInfo.RtkMode.RTK_Rover;
+            rtkInfo.optMode = SkytraqGps.RtkModeInfo.RtkOperationMode.Rover_Normal;
+
+            GPS_RESPONSE rep = p.gps.ConfigRtkModeAndOptFunction(DefaultCmdTimeout, rtkInfo, SkytraqGps.Attributes.Sram);
+            if (GPS_RESPONSE.ACK != rep)
+            {
+                r.reportType = WorkerReportParam.ReportType.ShowError;
+                p.error = WorkerParam.ErrorType.ConfigRtkModeError;
+                p.bw.ReportProgress(0, new WorkerReportParam(r));
+                return false;
+            }
+            r.reportType = WorkerReportParam.ReportType.ShowProgress;
+            r.output = "Configure RTK mode as a normal rover";
+            p.bw.ReportProgress(0, new WorkerReportParam(r));
+            return GPS_RESPONSE.ACK == rep;
+        }
 
         private bool DoQueryCrc(WorkerParam p, WorkerReportParam r, bool isSlave, bool isInMaster)
         {
@@ -940,7 +1020,6 @@ namespace ModuleTestV8
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
                 return false;
             }
-
             r.reportType = WorkerReportParam.ReportType.ShowProgress;
             r.output = "Check CRC pass";
             p.bw.ReportProgress(0, new WorkerReportParam(r));
@@ -1347,14 +1426,11 @@ namespace ModuleTestV8
             bool bdSnrPass = !p.profile.testBdSnr;
             bool giSnrPass = !p.profile.testGiSnr;
             GPS_RESPONSE rep = GPS_RESPONSE.NONE;
-            if (p.profile.waitPositionFix && !SetGpsEphemeris(p, r))
-            {
-                return false;
-            }
 
-            if (p.profile.testGlSnr)
+            //if (p.profile.testGlSnr && !p.profile.waitPositionFix && !p.profile.testToRtkFix && !p.profile.testToRtkFloat)
+            if (p.profile.testGlSnr && !p.profile.waitPositionFix)
             {
-                rep = p.gps.SetRegister(1000, 0x90000000, 0x01);
+                rep = p.gps.SetRegister(2000, 0x90000000, 0x01);
                 if (GPS_RESPONSE.ACK != rep)
                 {
                     r.reportType = WorkerReportParam.ReportType.ShowError;
@@ -1373,7 +1449,19 @@ namespace ModuleTestV8
             }
 
             rep = p.gps.ConfigMessageOutput(0x01);
-            if (GPS_RESPONSE.ACK != rep)
+            if (GPS_RESPONSE.NACK == rep)
+            {
+                r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                r.output = "Config message output NACK";
+                p.bw.ReportProgress(0, new WorkerReportParam(r));
+            }
+            else if(GPS_RESPONSE.ACK == rep)
+            {
+                r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                r.output = "Config message output successfully";
+                p.bw.ReportProgress(0, new WorkerReportParam(r));
+            }
+            else
             {
                 r.reportType = WorkerReportParam.ReportType.ShowError;
                 p.error = WorkerParam.ErrorType.ConfigMessageOutputError;
@@ -1381,14 +1469,8 @@ namespace ModuleTestV8
                 EndProcess(p);
                 return false;
             }
-            else
-            {
-                r.reportType = WorkerReportParam.ReportType.ShowProgress;
-                r.output = "Config message output successfully";
-                p.bw.ReportProgress(0, new WorkerReportParam(r));
-            }
 
-            rep = p.gps.ConfigNmeaOutput(1, 1, 1, 0, 1, 1, 0, 0);
+            rep = p.gps.ConfigNmeaOutput(1, 1, 1, 0, 1, 0, 0, 0);
             if (GPS_RESPONSE.ACK != rep)
             {
                 r.reportType = WorkerReportParam.ReportType.ShowProgress;
@@ -1402,6 +1484,27 @@ namespace ModuleTestV8
                 r.reportType = WorkerReportParam.ReportType.ShowProgress;
                 r.output = "Config NMEA interval successfully";
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
+            }
+
+            //if (p.profile.testToRtkFloat || p.profile.testToRtkFix)
+            if (p.profile.waitPositionFix && p.profile.testFixedType >= ModuleTestProfile.TestFixType.RtkFloat)
+            {
+                rep = p.gps.QueryAlphaLicense(DefaultCmdTimeout);
+                if (rep == GPS_RESPONSE.ACK)
+                {
+                    rep = p.gps.SetRegister(DefaultCmdTimeout, 0xFE00007C, 3);
+                    if (GPS_RESPONSE.ACK != rep)
+                    {
+                        //Thread.Sleep(3000);
+                        r.reportType = WorkerReportParam.ReportType.ShowError;
+                        p.error = WorkerParam.ErrorType.ConfigRtkModeError;
+                        p.bw.ReportProgress(0, new WorkerReportParam(r));
+                        return false;
+                    }
+                    r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                    r.output = "Temporarily active license";
+                    p.bw.ReportProgress(0, new WorkerReportParam(r));
+                }
             }
 
             bool positionFixed = false;
@@ -1446,25 +1549,46 @@ namespace ModuleTestV8
 
                 if (GpsMsgParser.ParsingResult.UpdateFixMode == ps)
                 {
-                    if (p.profile.testToRtkFix)
+                    if (p.profile.waitPositionFix)
                     {
-                        positionFixed = p.parser.parsingStat.IsRtkFix();
-                    }
-                    else if (p.profile.testToRtkFloat)
-                    {
-                        positionFixed = p.parser.parsingStat.IsRtkFloat();
-                    }
-                    else if (p.profile.waitPositionFix)
-                    {
-                        positionFixed = p.parser.parsingStat.IsFixed();
+                        if (p.profile.testFixedType == ModuleTestProfile.TestFixType.RtkFixRatio10)
+                        {
+                            positionFixed = (p.parser.parsingStat.IsRtkFix() && p.parser.parsingStat.rtkRatio >= 10);
+                        }
+                        else if (p.profile.testFixedType == ModuleTestProfile.TestFixType.RtkFix)
+                        {
+                            positionFixed = p.parser.parsingStat.IsRtkFix();
+                        }
+                        else if (p.profile.testFixedType == ModuleTestProfile.TestFixType.RtkFloat)
+                        {
+                            positionFixed = p.parser.parsingStat.IsRtkFloat();
+                        }
+                        else if (p.profile.testFixedType == ModuleTestProfile.TestFixType.PositionFix)
+                        {
+                            positionFixed = p.parser.parsingStat.IsFixed();
+                        }
                     }
                     r.reportType = WorkerReportParam.ReportType.ShowProgress;
                     r.output = "Fix status : " + p.parser.parsingStat.GetFixStatusString();
                     p.bw.ReportProgress(0, new WorkerReportParam(r));
                 }
+                if (p.profile.waitPositionFix &&
+                    p.profile.testFixedType >= ModuleTestProfile.TestFixType.RtkFloat &&
+                    GpsMsgParser.ParsingResult.UpdateRtkRatio == ps)
+                {
+                    r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                    r.output = string.Format("RTK Ratio : {0} ({1})", p.parser.parsingStat.rtkRatio.ToString(),  p.parser.parsingStat.GetFixStatusString());
+                    p.bw.ReportProgress(0, new WorkerReportParam(r));
+                    if (p.profile.testFixedType == ModuleTestProfile.TestFixType.RtkFixRatio10)
+                    {
+                        positionFixed = (p.parser.parsingStat.IsRtkFix() && p.parser.parsingStat.rtkRatio >= 10);
+                    }
+                }
 
-                if (!p.profile.testToRtkFix && !p.profile.testToRtkFloat && !p.profile.waitPositionFix)
+                if (!p.profile.waitPositionFix)
+                {
                     positionFixed = true;
+                }
             } while (!(gpSnrPass && glSnrPass && bdSnrPass && giSnrPass && positionFixed) && !p.bw.CancellationPending);
 
             if (gpSnrPass && glSnrPass && bdSnrPass && giSnrPass && positionFixed)
@@ -1503,18 +1627,25 @@ namespace ModuleTestV8
             }
 
             rep = p.gps.ConfigMessageOutput(0x00);
-            if (GPS_RESPONSE.ACK != rep)
+            if (GPS_RESPONSE.NACK == rep)
             {
                 r.reportType = WorkerReportParam.ReportType.ShowProgress;
-                p.error = WorkerParam.ErrorType.ConfigMessageOutputError;
+                r.output = "Config message output NACK";
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
-                return false;
+            }
+            else if (GPS_RESPONSE.ACK == rep)
+            {
+                r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                r.output = "Config message output successfully";
+                p.bw.ReportProgress(0, new WorkerReportParam(r));
             }
             else
             {
-                r.reportType = WorkerReportParam.ReportType.ShowProgress;
-                r.output = "Turn off NMEA output successfully";
+                r.reportType = WorkerReportParam.ReportType.ShowError;
+                p.error = WorkerParam.ErrorType.ConfigMessageOutputError;
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
+                EndProcess(p);
+                return false;
             }
             return true;
         }
@@ -1544,23 +1675,24 @@ namespace ModuleTestV8
             //    return false;
             //}
 
+            //20181224, test to RTK float and test to RTK fix also need upload ephemeris, request from Angus 
+            //Configure RTK mode to normal rover
+            if (p.profile.waitPositionFix && 
+                p.profile.testFixedType >= ModuleTestProfile.TestFixType.RtkFloat)
+            {
+                if (!DoConfigureRtkMode(p, r))
+                {
+                    return false;
+                }
+            }
             if (p.profile.waitPositionFix)
             {
                 int lon = 0, lat = 0, alt = 0;
                 bool romType = !GetGoldenPosition(ref lon, ref lat, ref alt);
-                DoWarmStart(p, r, romType, lon, lat, alt, 2000);
-            }
-
-            if (p.profile.testToRtkFloat || p.profile.testToRtkFix)
-            {
-                GPS_RESPONSE rep = p.gps.QueryAlphaLicense(DefaultCmdTimeout);
-                if (rep == GPS_RESPONSE.ACK)
+                bool ret = DoWarmStart(p, r, romType, lon, lat, alt, 2000);
+                if (ret && (p.profile.testGpSnr || p.profile.testGlSnr || p.profile.testBdSnr || p.profile.testGiSnr))
                 {
-                    rep = p.gps.SetRegister(DefaultCmdTimeout, 0xFE00007C, 3);
-                    if (GPS_RESPONSE.ACK != rep)
-                    {
-                        Thread.Sleep(3000);
-                    }
+                    SetGpsEphemeris(p, r);
                 }
             }
 
@@ -1662,7 +1794,7 @@ namespace ModuleTestV8
         {
             if (controllerInit)
             {
-                Thread.Sleep(300);
+                Thread.Sleep(200);
                 return true;
             }
             controllerInit = true;
@@ -2111,11 +2243,25 @@ namespace ModuleTestV8
                 return false;
             }
 
+            //20181224, test to RTK float and test to RTK fix also need upload ephemeris, request from Angus 
+            //Configure RTK mode to normal rover
+            if (p.profile.waitPositionFix &&
+                p.profile.testFixedType >= ModuleTestProfile.TestFixType.RtkFloat)
+            {
+                if (!DoConfigureRtkMode(p, r))
+                {
+                    return false;
+                }
+            }
             if (p.profile.waitPositionFix)
             {
                 int lon = 0, lat = 0, alt = 0;
                 bool romType = !GetGoldenPosition(ref lon, ref lat, ref alt);
-                DoWarmStart(p, r, romType, lon, lat, alt, 2000);
+                bool ret = DoWarmStart(p, r, romType, lon, lat, alt, 2000);
+                if (ret && (p.profile.testGpSnr || p.profile.testGlSnr || p.profile.testBdSnr || p.profile.testGiSnr))
+                {
+                    SetGpsEphemeris(p, r);
+                }
             }
 
             if (!DoQueryVersion(p, r, false))
@@ -2434,11 +2580,25 @@ namespace ModuleTestV8
             }
             Thread.Sleep(2500);
 
+            //20181224, test to RTK float and test to RTK fix also need upload ephemeris, request from Angus 
+            //Configure RTK mode to normal rover
+            if (p.profile.waitPositionFix &&
+                p.profile.testFixedType >= ModuleTestProfile.TestFixType.RtkFloat)
+            {
+                if (!DoConfigureRtkMode(p, r))
+                {
+                    return false;
+                }
+            }
             if (p.profile.waitPositionFix)
             {
                 int lon = 0, lat = 0, alt = 0;
                 bool romType = !GetGoldenPosition(ref lon, ref lat, ref alt);
-                DoWarmStart(p, r, romType, lon, lat, alt, 2000);
+                bool ret = DoWarmStart(p, r, romType, lon, lat, alt, 2000);
+                if (ret && (p.profile.testGpSnr || p.profile.testGlSnr || p.profile.testBdSnr || p.profile.testGiSnr))
+                {
+                    SetGpsEphemeris(p, r);
+                }
             }
 
             if (!DoQueryVersion(p, r, false))
@@ -2785,7 +2945,7 @@ namespace ModuleTestV8
         {
             GPS_RESPONSE rep;
             int TestDeviceTimeout = 500;
-            int[] testingOrder = { 5, 1, 0, 3, 2, 4, 6, 7, 8 };
+            int[] testingOrder = { 5, 1, 3, 4, 0, 2, 6, 7, 8 };
             int[] baudIdxTimeout = { 4000, 1000, 500, 300, 300, 300, 300, 300, 300 };
 
             if (first != -1)
@@ -2811,21 +2971,22 @@ namespace ModuleTestV8
                 }
                 else
                 {
-                    rep = p.gps.TestDevice(TestDeviceTimeout, 1);
+                    //rep = p.gps.TestDevice(TestDeviceTimeout, 1);
+                    rep = p.gps.TestDevice2(TestDeviceTimeout, 1);
                 }
-                if (GPS_RESPONSE.NACK != rep)
-                {
-                    r.reportType = WorkerReportParam.ReportType.ShowProgress;
-                    r.output = "Baud rate " + GpsBaudRateConverter.Index2BaudRate(first).ToString() + " invalid.";
-                    p.bw.ReportProgress(0, new WorkerReportParam(r));
-                    p.gps.Close();
-                }
-                else
+                if (GPS_RESPONSE.ACK == rep || GPS_RESPONSE.NACK == rep)
                 {
                     r.reportType = WorkerReportParam.ReportType.ShowProgress;
                     r.output = "Found working baud rate " + GpsBaudRateConverter.Index2BaudRate(first).ToString() + ".";
                     p.bw.ReportProgress(0, new WorkerReportParam(r));
                     return first;
+                }
+                else
+                {
+                    r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                    r.output = "Baud rate " + GpsBaudRateConverter.Index2BaudRate(first).ToString() + " invalid.";
+                    p.bw.ReportProgress(0, new WorkerReportParam(r));
+                    p.gps.Close();
                 }
             }
 
@@ -2861,22 +3022,24 @@ namespace ModuleTestV8
                 }
                 else
                 {
-                    rep = p.gps.TestDevice(TestDeviceTimeout, 1);
+                    //rep = p.gps.TestDevice(TestDeviceTimeout, 1);
+                    rep = p.gps.TestDevice2(TestDeviceTimeout, 1);
                 }
 
-                if (GPS_RESPONSE.NACK != rep)
-                {
-                    r.reportType = WorkerReportParam.ReportType.ShowProgress;
-                    r.output = "Baud rate " + GpsBaudRateConverter.Index2BaudRate(i).ToString() + " invalid!(" + TestDeviceTimeout.ToString() + ")";
-                    p.bw.ReportProgress(0, new WorkerReportParam(r));
-                    p.gps.Close();
-                }
-                else
+                if (GPS_RESPONSE.ACK == rep || GPS_RESPONSE.NACK == rep)
                 {
                     r.reportType = WorkerReportParam.ReportType.ShowProgress;
                     r.output = "Found working baud rate " + GpsBaudRateConverter.Index2BaudRate(i).ToString() + ".";
                     p.bw.ReportProgress(0, new WorkerReportParam(r));
                     return i;
+
+                }
+                else
+                {
+                    r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                    r.output = "Baud rate " + GpsBaudRateConverter.Index2BaudRate(i).ToString() + " invalid!(" + TestDeviceTimeout.ToString() + ")";
+                    p.bw.ReportProgress(0, new WorkerReportParam(r));
+                    p.gps.Close();
                 }
             }
             return -1;
@@ -2889,7 +3052,7 @@ namespace ModuleTestV8
 #endif
 
         private static Random rand = new Random();
-        private int lastDeviceBaudIdx = -1;
+        private static int lastDeviceBaudIdx = -1;
         private int lastRomBaudIdx = 1;
         public bool DoDownload(WorkerParam p)
         {
@@ -2897,7 +3060,6 @@ namespace ModuleTestV8
             r.index = p.index;
             Stopwatch sw = new Stopwatch();
             sw.Start();
-
 
             if (p.profile.enableSlaveDownload)
             {
@@ -2930,7 +3092,6 @@ namespace ModuleTestV8
                     p.bw.ReportProgress(0, new WorkerReportParam(r));
                     return false;
                 }
-                Thread.Sleep(1000);
                 ResetWaitingCount();
             }
 
@@ -2939,24 +3100,28 @@ namespace ModuleTestV8
             {
                 Thread.Sleep(10);
             }
-            else
-            {
-                EndProcess(p);
-            }
+            //else
+            //{
+            //    EndProcess(p);
+            //}
             if (!downloadResult)
             {
                 return false;
             }
-            else if (!p.profile.enableSlaveDownload)
+
+            if (!p.profile.enableSlaveDownload)
             {
                 r.reportType = WorkerReportParam.ReportType.ShowProgress;
                 r.output = "Total time : " + (sw.ElapsedMilliseconds / 1000).ToString() + " seconds";
+                p.bw.ReportProgress(0, new WorkerReportParam(r));
+
+                r.reportType = WorkerReportParam.ReportType.ShowFinished;
+                p.error = WorkerParam.ErrorType.NoError;
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
                 return true;
             }
 
             CheckControllerEvent(p, 90);
-            Thread.Sleep(1000);
             ResetWaitingCount();
 
             if (NoFixture)
@@ -2967,10 +3132,10 @@ namespace ModuleTestV8
             {
                 return false;
             }
-            Thread.Sleep(2500);
+            Thread.Sleep(1500);
 
             CheckControllerEvent(p, 90);
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
             ResetWaitingCount();
 
             //Slave download is always at 115200 bps.
@@ -2988,6 +3153,30 @@ namespace ModuleTestV8
             r.output = "Total time : " + (sw.ElapsedMilliseconds / 1000).ToString() + " seconds";
             p.bw.ReportProgress(0, new WorkerReportParam(r));
             return true;
+        }
+
+        private bool WaitDeviceActive(WorkerParam p, int timeout, int times)
+        {
+            for (int i = 0; i < times; ++i)
+            {
+                GPS_RESPONSE rep = GPS_RESPONSE.NONE;
+                if (processSimulation)
+                {
+                    Thread.Sleep(100 + rand.Next(0, 10));
+                    rep = GPS_RESPONSE.NACK;
+                }
+                else
+                {
+                    //rep = p.gps.TestDevice(timeout, 1);
+                    rep = p.gps.TestDevice2(timeout, 1);
+                }
+
+                if (GPS_RESPONSE.ACK == rep)
+                {
+                    return true;
+                }
+            }
+            return false;   
         }
 
         private bool DrPassThrough(WorkerParam p, bool showErrorMessage, bool isEnter, bool isRom, int tryTimes)
@@ -3080,7 +3269,6 @@ namespace ModuleTestV8
                 r.reportType = WorkerReportParam.ReportType.ShowError;
                 p.error = WorkerParam.ErrorType.OpenPortFail;
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
-                //EndProcess(p);
                 return false;
             }
 
@@ -3099,6 +3287,7 @@ namespace ModuleTestV8
                 {
                     rep = p.gps.QueryVersion(DefaultCmdTimeout, 1, ref kVer, ref sVer, ref rev);
                 }
+
                 if (GPS_RESPONSE.ACK != rep)
                 {
                     r.reportType = WorkerReportParam.ReportType.ShowError;
@@ -3110,8 +3299,6 @@ namespace ModuleTestV8
                 r.reportType = WorkerReportParam.ReportType.ShowProgress;
                 r.output = "Query Version :" + rev.ToString();
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
-
-
                 if (rev != "20130221" && rev != "20150521")
                 {
                     //Reboot to ROM Code
@@ -3172,30 +3359,34 @@ namespace ModuleTestV8
             }
 
             int downloadBaud = (downloadFw2) ? 5 : p.profile.dlBaudSel;
-            if (processSimulation)
+            if (p.gps.GetBaudRate() != GpsBaudRateConverter.Index2BaudRate(downloadBaud))
             {
-                Thread.Sleep(1200 + +rand.Next(0, 100));
-                rep = GPS_RESPONSE.ACK;
-            }
-            else
-            {
-                rep = p.gps.ChangeBaudrate((byte)downloadBaud, 2, false);
-            }
-            if (GPS_RESPONSE.ACK != rep)
-            {
-                r.reportType = WorkerReportParam.ReportType.ShowError;
-                p.error = WorkerParam.ErrorType.ChangeBaudRateFail;
+                if (processSimulation)
+                {
+                    Thread.Sleep(1200 + +rand.Next(0, 100));
+                    rep = GPS_RESPONSE.ACK;
+                }
+                else
+                {
+                    rep = p.gps.ChangeBaudrate((byte)downloadBaud, 2, false);
+                }
+                if (GPS_RESPONSE.ACK != rep)
+                {
+                    r.reportType = WorkerReportParam.ReportType.ShowError;
+                    p.error = WorkerParam.ErrorType.ChangeBaudRateFail;
+                    p.bw.ReportProgress(0, new WorkerReportParam(r));
+                    return false;
+                }
+                r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                r.output = "Change baud rate to " + GpsBaudRateConverter.Index2BaudRate(downloadBaud) + " successfully";
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
-                return false;
             }
-            r.reportType = WorkerReportParam.ReportType.ShowProgress;
-            r.output = "Change baud rate to " + GpsBaudRateConverter.Index2BaudRate(downloadBaud) + " successfully";
-            p.bw.ReportProgress(0, new WorkerReportParam(r));
 
             if (downloadFw2 && !DrPassThrough(p, showPassThroughError, true, true, 1))
             {   //Enter slave pass-through
                 return false;
             }
+            WaitDeviceActive(p, 600, 5);
 
             String dbgOutput = "";
             if (processSimulation)
@@ -3205,7 +3396,18 @@ namespace ModuleTestV8
             }
             else
             {
-                rep = p.gps.SendLoaderDownload(ref dbgOutput, p.profile.dlBaudSel, downloadFw2);
+                for (int retry = 5; retry != 0; --retry)
+                {
+                    rep = p.gps.SendLoaderDownload(ref dbgOutput, p.profile.dlBaudSel, downloadFw2);
+                    if (GPS_RESPONSE.OK == rep)
+                    {
+                        break;
+                    }
+                    r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                    r.output = "SendLoaderDownload retry...";
+                    p.bw.ReportProgress(0, new WorkerReportParam(r));
+                    Thread.Sleep(100);
+                }
             }
             if (GPS_RESPONSE.OK != rep)
             {
@@ -3447,7 +3649,8 @@ namespace ModuleTestV8
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
             }
 
-            if (p.profile.testGlSnr)
+            //if (p.profile.testGlSnr)
+            if (p.profile.testGlSnr && !p.profile.waitPositionFix)
             {
                 rep = p.gps.SetRegister(1000, 0x90000000, 0x01);
                 if (GPS_RESPONSE.ACK != rep)
@@ -3467,9 +3670,29 @@ namespace ModuleTestV8
                     p.bw.ReportProgress(0, new WorkerReportParam(r));
                 }
             }
+            else
+            {
+                rep = p.gps.SetRegister(2000, 0x90000000, 0x00);
+                if (GPS_RESPONSE.ACK != rep)
+                {
+                    r.reportType = WorkerReportParam.ReportType.ShowError;
+                    p.error = (rep == GPS_RESPONSE.NACK)
+                        ? WorkerParam.ErrorType.SetPsti50Nack
+                        : WorkerParam.ErrorType.SetPsti50Timeout;
+                    p.bw.ReportProgress(0, new WorkerReportParam(r));
+                    return false;
+                }
+                else
+                {
+                    r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                    r.output = "Set PSTI 50 Interval successfully";
+                    p.bw.ReportProgress(0, new WorkerReportParam(r));
+                }
+            }
 
             if (p.profile.testClockOffset)
             {
+
                 r.reportType = WorkerReportParam.ReportType.ShowProgress;
                 r.output = "Waiting for position fix to get clock offset...";
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
@@ -3524,25 +3747,24 @@ namespace ModuleTestV8
                 r.reportType = WorkerReportParam.ReportType.ShowProgress;
                 r.output = "Updating the Doppler frequency table...";
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
-                if (!p.profile.testGpSnr && p.profile.testGiSnr)
-                {
-                    //Navic change start channel from 0, request from Terrance 20181002
-                    //for (int i = GpsMsgParser.ParsingStatus.NavicChannelStart; i < GpsMsgParser.ParsingStatus.MaxNavicChannels; ++i)
-                    for (int i = 0; i < GpsMsgParser.ParsingStatus.MaxChannels; i++)
-                    {
-                        GpsMsgParser.ParsingStatus.sateInfo s = TestModule.dvResult[r.index].GetNavicSate(i);
-                        UInt32 prn = 0, freq = 0;
-                        rep = p.gps.QueryChannelDoppler((byte)i, ref prn, ref freq);
-                        goldenPrnTable[i - GpsMsgParser.ParsingStatus.NavicChannelStart] = prn;
-                        goldenFreqTable[i - GpsMsgParser.ParsingStatus.NavicChannelStart] = freq;
-                        r.reportType = WorkerReportParam.ReportType.ShowProgress;
-                        r.output = "CH=" + i + ", PRN=" + prn + ", FRQ=" + ((Int16)freq).ToString("F0");
-                        p.bw.ReportProgress(0, new WorkerReportParam(r));
-                    }
-
-                }
-                else
-                {
+                //if (!p.profile.testGpSnr && p.profile.testGiSnr)
+                //{
+                //    //Navic change start channel from 0, request from Terrance 20181002
+                //    //for (int i = GpsMsgParser.ParsingStatus.NavicChannelStart; i < GpsMsgParser.ParsingStatus.MaxNavicChannels; ++i)
+                //    for (int i = 0; i < GpsMsgParser.ParsingStatus.MaxChannels; i++)
+                //    {
+                //        GpsMsgParser.ParsingStatus.sateInfo s = TestModule.dvResult[r.index].GetNavicSate(i);
+                //        UInt32 prn = 0, freq = 0;
+                //        rep = p.gps.QueryChannelDoppler((byte)i, ref prn, ref freq);
+                //        goldenPrnTable[i - GpsMsgParser.ParsingStatus.NavicChannelStart] = prn;
+                //        goldenFreqTable[i - GpsMsgParser.ParsingStatus.NavicChannelStart] = freq;
+                //        r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                //        r.output = "CH=" + i + ", PRN=" + prn + ", FRQ=" + ((Int16)freq).ToString("F0");
+                //        p.bw.ReportProgress(0, new WorkerReportParam(r));
+                //    }
+                //}
+                //else
+                //{
                     for (int i = 0; i < GpsMsgParser.ParsingStatus.MaxChannels; i++)
                     {
                         GpsMsgParser.ParsingStatus.sateInfo s = TestModule.dvResult[r.index].GetGpsSate(i);
@@ -3554,9 +3776,11 @@ namespace ModuleTestV8
                         r.output = "CH=" + i + ", PRN=" + prn + ", FRQ=" + ((Int16)freq).ToString("F0");
                         p.bw.ReportProgress(0, new WorkerReportParam(r));
                     }   //for (int i = 0; i < GpsMsgParser.ParsingStatus.MaxSattellite; i++)
-                }
+                //}
             }
 
+            //20181224, test to RTK float and test to RTK fix also need upload ephemeris, request from Angus 
+            //if (p.profile.waitPositionFix)
             if (p.profile.waitPositionFix)
             {   //Get Golden Ephemeris
                 goldenLonString = p.parser.parsingStat.lonString;
@@ -3643,6 +3867,7 @@ namespace ModuleTestV8
 
             } while (p.bw.CancellationPending != true);
 
+            DoHotStart(p, r, 1500);
             EndProcess(p);
             r.reportType = WorkerReportParam.ReportType.ShowProgress;
             r.output = "Closed UART";
@@ -3662,160 +3887,175 @@ namespace ModuleTestV8
             antennaEvent.Set();
         }
 
-        private GPS_RESPONSE GetNavicClockOffset(WorkerParam p, UInt32 gdClockOffset, UInt32 prn, UInt32 freq, ref Int32 clkData)
-        {
-            GPS_RESPONSE rep = GPS_RESPONSE.TIMEOUT;
-            for (int i = GpsMsgParser.ParsingStatus.NavicChannelStart; i < GpsMsgParser.ParsingStatus.MaxNavicChannels; ++i)
-            {
-                //GpsMsgParser.ParsingStatus.sateInfo s = TestModule.dvResult[r.index].GetNavicSate(i);
-                UInt32 myPrn = 0, myFreq = 0;
-                rep = p.gps.QueryChannelDoppler((byte)i, ref myPrn, ref myFreq);
-                if(rep != GPS_RESPONSE.ACK)
-                {
-                    return rep;
-                }
-                if(prn != myPrn)
-                {
-                    continue;
-                }
+        //private GPS_RESPONSE GetNavicClockOffset(WorkerParam p, UInt32 gdClockOffset, UInt32 prn, UInt32 freq, ref Int32 clkData)
+        //{
+        //    GPS_RESPONSE rep = GPS_RESPONSE.TIMEOUT;
+        //    for (int i = GpsMsgParser.ParsingStatus.NavicChannelStart; i < GpsMsgParser.ParsingStatus.MaxNavicChannels; ++i)
+        //    {
+        //        //GpsMsgParser.ParsingStatus.sateInfo s = TestModule.dvResult[r.index].GetNavicSate(i);
+        //        UInt32 myPrn = 0, myFreq = 0;
+        //        rep = p.gps.QueryChannelDoppler((byte)i, ref myPrn, ref myFreq);
+        //        if(rep != GPS_RESPONSE.ACK)
+        //        {
+        //            return rep;
+        //        }
+        //        if(prn != myPrn)
+        //        {
+        //            continue;
+        //        }
 
-                Int16 sGdOffset = (Int16)((UInt16)(gdClockOffset));
-                Int16 sMyFreq = (Int16)((UInt16)(myFreq));
-                Int16 sFreq = (Int16)((UInt16)(freq));
+        //        Int16 sGdOffset = (Int16)((UInt16)(gdClockOffset));
+        //        Int16 sMyFreq = (Int16)((UInt16)(myFreq));
+        //        Int16 sFreq = (Int16)((UInt16)(freq));
 
-                clkData = sGdOffset - sMyFreq - sFreq;
-                return GPS_RESPONSE.ACK;
-            }
-            return GPS_RESPONSE.TIMEOUT;
-        }
+        //        clkData = sGdOffset - sMyFreq - sFreq;
+        //        return GPS_RESPONSE.ACK;
+        //    }
+        //    return GPS_RESPONSE.TIMEOUT;
+        //}
 
         private bool TestClockOffset(WorkerParam p, WorkerReportParam r)
         {
             int tryCount = 3;
-            int sumOfClockOffset = 0;
-            int prnCount = 0;
-            GPS_RESPONSE rep = GPS_RESPONSE.NONE;
-            if (p.profile.waitPositionFix)
-            {
-                UInt32 clk = 0;
-                rep = p.gps.GetRegister(DefaultCmdTimeout, 0x00000001, ref clk);
-                if (GPS_RESPONSE.ACK != rep)
-                {
-                    r.reportType = WorkerReportParam.ReportType.ShowError;
-                    p.error = WorkerParam.ErrorType.GetClockOffsetFail;
-                    p.bw.ReportProgress(0, new WorkerReportParam(r));
-                    return false;
-                }
-                sumOfClockOffset = (Int16)clk;
-                prnCount = 1;
-            }
-            else
-            {
-                do
-                {
-                    int selectedPrn = 0, selectedSnr = 0, selectedChn = 0;
-                    //Find the maximum SNR channel
-                    if (!p.profile.testGpSnr && p.profile.testGiSnr)
-                    {   //NAVIC only
-                        for (int i = 0; i < GpsMsgParser.ParsingStatus.MaxSattellite; i++)
-                        {
-                            GpsMsgParser.ParsingStatus.sateInfo s = TestModule.dvResult[r.index].GetNavicSate(i);
-                            if (s.snr > selectedSnr)
-                            {
-                                selectedPrn = s.prn;
-                                selectedSnr = s.snr;
-                                selectedChn = i;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for (int i = 0; i < GpsMsgParser.ParsingStatus.MaxSattellite; i++)
-                        {
-                            GpsMsgParser.ParsingStatus.sateInfo s = TestModule.dvResult[r.index].GetGpsSate(i);
-                            if (s.snr > selectedSnr)
-                            {
-                                selectedPrn = s.prn;
-                                selectedSnr = s.snr;
-                                selectedChn = i;
-                            }
-                        }
-                    }
 
-                    UInt32 prn = (UInt32)selectedPrn, freq = 0;
-                    Int32 clkData = 0;
-                    if (!GetPrnDopplerFreq(prn, ref freq))
-                    {
-                        continue;
-                    }
-                    if (!p.profile.testGpSnr && p.profile.testGiSnr)
-                    {
-                        rep = GetNavicClockOffset(p, gdClockOffset, prn, freq, ref clkData);
-                    }
-                    else
-                    {
-                        rep = p.gps.QueryChannelClockOffset(gdClockOffset, prn, freq, ref clkData);
-                    }
-
+            while (--tryCount >= 0)
+            {
+                int sumOfClockOffset = 0;
+                int prnCount = 0;
+                GPS_RESPONSE rep = GPS_RESPONSE.NONE;
+                if (p.profile.waitPositionFix)
+                {
+                    UInt32 clk = 0;
+                    rep = p.gps.GetRegister(DefaultCmdTimeout, 0x00000001, ref clk);
                     if (GPS_RESPONSE.ACK != rep)
                     {
                         r.reportType = WorkerReportParam.ReportType.ShowError;
                         p.error = WorkerParam.ErrorType.GetClockOffsetFail;
                         p.bw.ReportProgress(0, new WorkerReportParam(r));
-                        EndProcess(p);
                         return false;
                     }
-                    else
-                    {
-                        r.reportType = WorkerReportParam.ReportType.ShowProgress;
-                        r.output = "PRN=" + prn + ", GDCLK=" + ((Int16)gdClockOffset) + ", FRQ=" + ((Int16)freq) + ", CLK=" + ((Int16)clkData);
-                        p.bw.ReportProgress(0, new WorkerReportParam(r));
-                    }
-                    sumOfClockOffset += unchecked((Int16)clkData);
-                    prnCount++;
-
-                    if (prnCount < 1)
-                    {
-                        sumOfClockOffset = 0;
-                        prnCount = 0;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                } while (--tryCount > 0);
-
-                if (tryCount == 0)
+                    sumOfClockOffset = (Int16)clk;
+                    prnCount = 1;
+                }
+                else
                 {
-                    r.reportType = WorkerReportParam.ReportType.ShowError;
-                    p.error = WorkerParam.ErrorType.GetClockOffsetFail;
+                    bool gotDoppler = false;
+                    int getCount = 5;
+                    while (--getCount >= 0)
+                    {
+                        int selectedPrn = 0, selectedSnr = 0, selectedChn = 0;
+                        //Find the maximum SNR channel
+                        if (!p.profile.testGpSnr && p.profile.testGiSnr)
+                        {   //NAVIC only
+                            for (int i = 0; i < GpsMsgParser.ParsingStatus.MaxSattellite; i++)
+                            {
+                                GpsMsgParser.ParsingStatus.sateInfo s = TestModule.dvResult[r.index].GetNavicSate(i);
+                                if (s.snr > selectedSnr)
+                                {
+                                    selectedPrn = s.prn;
+                                    selectedSnr = s.snr;
+                                    selectedChn = i;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < GpsMsgParser.ParsingStatus.MaxSattellite; i++)
+                            {
+                                GpsMsgParser.ParsingStatus.sateInfo s = TestModule.dvResult[r.index].GetGpsSate(i);
+                                if (s.snr > selectedSnr)
+                                {
+                                    selectedPrn = s.prn;
+                                    selectedSnr = s.snr;
+                                    selectedChn = i;
+                                }
+                            }
+                        }
+
+                        UInt32 prn = (UInt32)selectedPrn, freq = 0;
+                        Int32 clkData = 0;
+                        if (!GetPrnDopplerFreq(prn, ref freq))
+                        {
+                            r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                            r.output = "GetPrnDopplerFreq failed!" + rep.ToString() + ", " +
+                                prn.ToString();
+                            p.bw.ReportProgress(0, new WorkerReportParam(r));
+
+                            Thread.Sleep(500);
+                            continue;
+                        }
+
+                        rep = p.gps.QueryChannelClockOffset(gdClockOffset, prn, freq, ref clkData);
+                        if (GPS_RESPONSE.ACK != rep)
+                        {
+                            r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                            r.output = "QueryChannelClockOffset failed!" + rep.ToString() + ", " +
+                                prn.ToString() + ", " + freq.ToString();
+                            p.bw.ReportProgress(0, new WorkerReportParam(r));
+
+                            Thread.Sleep(500);
+                            continue;
+                        }
+                        else
+                        {
+                            r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                            r.output = "PRN=" + prn + ", GDCLK=" + ((Int16)gdClockOffset) + ", FRQ=" + ((Int16)freq) + ", CLK=" + ((Int16)clkData);
+                            p.bw.ReportProgress(0, new WorkerReportParam(r));
+                        }
+                        sumOfClockOffset += unchecked((Int16)clkData);
+                        prnCount++;
+
+                        if (prnCount < 1)
+                        {
+                            sumOfClockOffset = 0;
+                            prnCount = 0;
+                        }
+                        else
+                        {
+                            gotDoppler = true;
+                            break;
+                        }
+                    }
+
+                    if (!gotDoppler)
+                    {
+                        r.reportType = WorkerReportParam.ReportType.ShowError;
+                        p.error = WorkerParam.ErrorType.GetClockOffsetFail;
+                        p.bw.ReportProgress(0, new WorkerReportParam(r));
+                        return false;
+                    }
+                }
+
+                double avgClockOffset = sumOfClockOffset / prnCount;
+                double clkPpm = avgClockOffset / (96.25 * 16.367667);
+                if (avgClockOffset.ToString("F0") == "-1")
+                {
+                    Console.WriteLine("avgClockOffset:" + avgClockOffset.ToString());
+                }
+                r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                r.output = "Device clock offset " + avgClockOffset.ToString("F0") + "(" + clkPpm.ToString("F2") + " ppm)";
+                p.bw.ReportProgress(0, new WorkerReportParam(r));
+
+                if (clkPpm < 0)
+                {
+                    clkPpm = -clkPpm;
+                }
+                if (clkPpm <= p.profile.clockOffsetThreshold)
+                {
+                    return true;
+                }
+                else
+                {
+                    r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                    r.output = "Test Clock Offset failed!";
                     p.bw.ReportProgress(0, new WorkerReportParam(r));
-                    return false;
+                    Thread.Sleep(300);
                 }
             }
-            double avgClockOffset = sumOfClockOffset / prnCount;
-            double clkPpm = avgClockOffset / (96.25 * 16.367667);
-            if (avgClockOffset.ToString("F0") == "-1")
-            {
-                Console.WriteLine("avgClockOffset:" + avgClockOffset.ToString());
-            }
-            r.reportType = WorkerReportParam.ReportType.ShowProgress;
-            r.output = "Device clock offset " + avgClockOffset.ToString("F0") + "(" + clkPpm.ToString("F2") + " ppm)";
+            r.reportType = WorkerReportParam.ReportType.ShowError;
+            p.error = WorkerParam.ErrorType.CheckClockOffsetFail;
             p.bw.ReportProgress(0, new WorkerReportParam(r));
-
-
-            if (clkPpm < 0)
-            {
-                clkPpm = -clkPpm;
-            }
-            if (clkPpm > p.profile.clockOffsetThreshold)
-            {
-                r.reportType = WorkerReportParam.ReportType.ShowError;
-                p.error = WorkerParam.ErrorType.CheckClockOffsetFail;
-                p.bw.ReportProgress(0, new WorkerReportParam(r));
-                return false;
-            }
-            return true;
+            return false;
         }
 
         private bool TestBarometerOdoAcc(WorkerParam p, WorkerReportParam r)
@@ -3982,20 +4222,23 @@ namespace ModuleTestV8
 
         private bool SetGpsEphemeris(WorkerParam p, WorkerReportParam r)
         {
-            GPS_RESPONSE rep = p.gps.SetGpsEphemeris(goldenGpsEphemeris);
-            if (GPS_RESPONSE.ACK != rep)
+            for (int retry = 3; retry != 0; --retry)
             {
-                r.reportType = WorkerReportParam.ReportType.ShowError;
-                p.error = WorkerParam.ErrorType.GetGoldenEphemerisFail;
+                GPS_RESPONSE rep = p.gps.SetGpsEphemeris(goldenGpsEphemeris);
+                if (GPS_RESPONSE.ACK != rep)
+                {
+                    r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                    r.output = "Set golden GPS ephemeris faild";
+                    p.bw.ReportProgress(0, new WorkerReportParam(r));
+                    continue;
+                }
+                r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                r.output = "Set golden GPS ephemeris successfully";
                 p.bw.ReportProgress(0, new WorkerReportParam(r));
-                return false;
+                goldenGpsEphemerisTime = DateTime.Now;
+                return true;
             }
-
-            r.reportType = WorkerReportParam.ReportType.ShowProgress;
-            r.output = "Get golden GPS ephemeris successfully";
-            p.bw.ReportProgress(0, new WorkerReportParam(r));
-            goldenGpsEphemerisTime = DateTime.Now;
-            return true;
+            return false;
         }
 
         private bool TestIo(WorkerParam p, WorkerReportParam r)
@@ -4040,24 +4283,31 @@ namespace ModuleTestV8
         private bool UpdateGoldenEphemeris(WorkerParam p, WorkerReportParam r)
         {
             TimeSpan diff = DateTime.Now - goldenGpsEphemerisTime;
-            if (diff.Minutes < 60 && GetGoldenGpsValidateCount() >= 12)
+            if (diff.Minutes < 10 && GetGoldenGpsValidateCount() >= 12)
             {
                 return true;
             }
-            GPS_RESPONSE rep = p.gps.QueryGpsEphemeris(ref goldenGpsEphemeris);
-            if (GPS_RESPONSE.ACK != rep)
-            {
-                r.reportType = WorkerReportParam.ReportType.ShowError;
-                p.error = WorkerParam.ErrorType.GetGoldenEphemerisFail;
-                p.bw.ReportProgress(0, new WorkerReportParam(r));
-                return false;
-            }
 
-            r.reportType = WorkerReportParam.ReportType.ShowProgress;
-            r.output = "Get golden GPS ephemeris successfully";
+            for (int retry = 5; retry != 0; --retry)
+            {
+                GPS_RESPONSE rep = p.gps.QueryGpsEphemeris(ref goldenGpsEphemeris);
+                if (GPS_RESPONSE.ACK != rep)
+                {
+                    r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                    r.output = "Get golden GPS ephemeris failed";
+                    p.bw.ReportProgress(0, new WorkerReportParam(r));
+                    continue;
+                }
+                r.reportType = WorkerReportParam.ReportType.ShowProgress;
+                r.output = "Get golden GPS ephemeris successfully";
+                p.bw.ReportProgress(0, new WorkerReportParam(r));
+                goldenGpsEphemerisTime = DateTime.Now;
+                return true;
+            }
+            r.reportType = WorkerReportParam.ReportType.ShowError;
+            p.error = WorkerParam.ErrorType.GetGoldenEphemerisFail;
             p.bw.ReportProgress(0, new WorkerReportParam(r));
-            goldenGpsEphemerisTime = DateTime.Now;
-            return true;
+            return false;
         }
 
         private int GetGoldenGpsValidateCount()

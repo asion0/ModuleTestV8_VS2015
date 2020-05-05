@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // 組件的一般資訊是由下列的屬性集控制。
@@ -38,17 +37,30 @@ using System.Runtime.InteropServices;
 // 1.0.3.XX - ModuleTest V8 2008, support V827 Socket board test
 
 #if NO_MOTOR_VERSION
-[assembly: AssemblyVersion("1.0.2.77")]
-[assembly: AssemblyFileVersion("1.0.2.77")]
+[assembly: AssemblyVersion("1.0.2.84")]
+[assembly: AssemblyFileVersion("1.0.2.84")]
 #else
-[assembly: AssemblyVersion("1.0.0.76")]
-[assembly: AssemblyFileVersion("1.0.0.76")]
+[assembly: AssemblyVersion("1.0.0.82")]
+[assembly: AssemblyFileVersion("1.0.0.82")]
 #endif
 
-// 1.0.0.77 - 20181109 Add try count in cold start.
-// 1.0.0.76 - 20181109 Fixed GLONASS SNR test issue and slave CRC check issue.
-// 1.0.0.75 - 20181108 Detect alpha FW before open license.
-// 1.0.0.74 - 20181002 Navic clock offset test from channel 0, request from Terrance.
+// 1.0.2.84 - 20191113 Add version information in log xml, report from Angus.
+// 1.0.2.84 - 20191113 Fixed download result issue, report from Angus.
+// 1.0.2.84 - 20191111 Add Hot start after golden finished test, report from Angus.
+// 1.0.2.83 - 20191111 Add retry in clock offset test, report from Angus.
+// 1.0.2.83 - 20190625 Modify scan baud for support NACK, report from Alex.
+// 1.0.2.82 - 20181225 Mody some issues (Ephemeris and rtk mode config) for RTK test, report from Angus.
+// 1.0.2.81 - 20181211 Fixed GI clock offset test bug, report from Angus.
+// 1.0.2.81 - 20181130 Turn off PSTI50 when test to fix mode for display GL snr bar.
+// 1.0.2.81 - 20181130 Turn off message in download for S2525 4800 bps ROM code.
+// 1.0.2.80 - 20181128 Retry 5 times when SendLoaderDownload, sometimes its no response.
+// 1.0.2.80 - 20181128 Auto press Start/Stop button on STRSVR 2.4.3 b29 when test.
+// 1.0.2.79 - 20181123 Fix issue in download after test will cause 1 slot slow.
+// 1.0.2.78 - 20181221 Temp version in Umec tech.
+// 1.0.2.77 - 20181109 Add try count in cold start.
+// 1.0.2.76 - 20181109 Fixed GLONASS SNR test issue and slave CRC check issue.
+// 1.0.2.75 - 20181108 Detect alpha FW before open license.
+// 1.0.2.74 - 20181002 Navic clock offset test from channel 0, request from Terrance.
 // 1.0.2.74 - 20181002 Add RTK fix mode test and support S1216DR8 test, report from Angus.
 // 1.0.2.73 - 20180423 Fix slave download no prom issue, report from Angus.
 // 1.0.2.72 - 20180313 Fix motor version bug.
@@ -76,8 +88,8 @@ using System.Runtime.InteropServices;
 // 1.0.0.51 - 20160119 Fixed [Test RTC] setting can't be save issue.
 // 1.0.0.50 - 20151001 Turn off NMEA output after SNR test to avoid response too slow in 4800 bps.
 // 1.0.0.49 - Support NavSpark-mini test.
-// 1.0.0.48 - 20150709 DR Module Test flow change. .
-// 1.0.0.47 - 20150625 Add DR Module Test support. .
+// 1.0.0.48 - 20150709 DR Module Test flow change.
+// 1.0.0.47 - 20150625 Add DR Module Test support.
 // 1.0.0.46 - Support Winbond new flash and add new module name.
 // 1.0.0.45 - Fix report convert issue when continuous conversion.
 // 1.0.0.43 - Add write protected in download loader.

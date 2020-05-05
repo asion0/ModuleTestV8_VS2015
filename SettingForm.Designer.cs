@@ -79,8 +79,6 @@
             this.giSnrLower = new System.Windows.Forms.TextBox();
             this.bdSnrLower = new System.Windows.Forms.TextBox();
             this.glSnrLower = new System.Windows.Forms.TextBox();
-            this.testToRtkFix = new System.Windows.Forms.CheckBox();
-            this.testToRtkFloat = new System.Windows.Forms.CheckBox();
             this.giSnrUpper = new System.Windows.Forms.TextBox();
             this.bdSnrUpper = new System.Windows.Forms.TextBox();
             this.glSnrUpper = new System.Windows.Forms.TextBox();
@@ -94,13 +92,25 @@
             this.useSensor = new System.Windows.Forms.CheckBox();
             this.reverseRotation = new System.Windows.Forms.CheckBox();
             this.drPanel = new System.Windows.Forms.Panel();
+            this.accZUpper = new System.Windows.Forms.TextBox();
+            this.accYUpper = new System.Windows.Forms.TextBox();
             this.label24 = new System.Windows.Forms.Label();
             this.label23 = new System.Windows.Forms.Label();
             this.tempCriteria = new System.Windows.Forms.TextBox();
+            this.accXUpper = new System.Windows.Forms.TextBox();
             this.insDrGyroUpper = new System.Windows.Forms.TextBox();
+            this.accZLower = new System.Windows.Forms.TextBox();
+            this.label30 = new System.Windows.Forms.Label();
+            this.accYLower = new System.Windows.Forms.TextBox();
+            this.label31 = new System.Windows.Forms.Label();
             this.pressureCriteria = new System.Windows.Forms.TextBox();
+            this.label29 = new System.Windows.Forms.Label();
             this.insDrGyroLower = new System.Windows.Forms.TextBox();
+            this.label28 = new System.Windows.Forms.Label();
+            this.testAcc = new System.Windows.Forms.CheckBox();
+            this.accXLower = new System.Windows.Forms.TextBox();
             this.testBaro = new System.Windows.Forms.CheckBox();
+            this.label27 = new System.Windows.Forms.Label();
             this.label26 = new System.Windows.Forms.Label();
             this.skipSpdDir = new System.Windows.Forms.CheckBox();
             this.label8 = new System.Windows.Forms.Label();
@@ -129,21 +139,12 @@
             this.loadFrom = new System.Windows.Forms.Button();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.label5 = new System.Windows.Forms.Label();
+            this.twoUartDownload = new System.Windows.Forms.CheckBox();
             this.enableSlaveDownload = new System.Windows.Forms.CheckBox();
             this.slaveIniFileName = new System.Windows.Forms.TextBox();
             this.browseSlaveIni = new System.Windows.Forms.Button();
-            this.testAcc = new System.Windows.Forms.CheckBox();
-            this.label27 = new System.Windows.Forms.Label();
-            this.accXLower = new System.Windows.Forms.TextBox();
-            this.label28 = new System.Windows.Forms.Label();
-            this.label29 = new System.Windows.Forms.Label();
-            this.accYLower = new System.Windows.Forms.TextBox();
-            this.label30 = new System.Windows.Forms.Label();
-            this.accXUpper = new System.Windows.Forms.TextBox();
-            this.accYUpper = new System.Windows.Forms.TextBox();
-            this.label31 = new System.Windows.Forms.Label();
-            this.accZLower = new System.Windows.Forms.TextBox();
-            this.accZUpper = new System.Windows.Forms.TextBox();
+            this.testFixedType = new System.Windows.Forms.ComboBox();
+            this.label32 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -176,7 +177,7 @@
             // gpModule
             // 
             this.gpModule.AutoSize = true;
-            this.gpModule.Location = new System.Drawing.Point(12, 18);
+            this.gpModule.Location = new System.Drawing.Point(12, 14);
             this.gpModule.Name = "gpModule";
             this.gpModule.Size = new System.Drawing.Size(82, 16);
             this.gpModule.TabIndex = 0;
@@ -188,7 +189,7 @@
             // glModule
             // 
             this.glModule.AutoSize = true;
-            this.glModule.Location = new System.Drawing.Point(12, 44);
+            this.glModule.Location = new System.Drawing.Point(12, 40);
             this.glModule.Name = "glModule";
             this.glModule.Size = new System.Drawing.Size(98, 16);
             this.glModule.TabIndex = 1;
@@ -201,7 +202,7 @@
             // 
             this.gpModuleSel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.gpModuleSel.FormattingEnabled = true;
-            this.gpModuleSel.Location = new System.Drawing.Point(142, 18);
+            this.gpModuleSel.Location = new System.Drawing.Point(142, 14);
             this.gpModuleSel.Name = "gpModuleSel";
             this.gpModuleSel.Size = new System.Drawing.Size(144, 20);
             this.gpModuleSel.TabIndex = 4;
@@ -211,7 +212,7 @@
             // 
             this.glModuleSel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.glModuleSel.FormattingEnabled = true;
-            this.glModuleSel.Location = new System.Drawing.Point(142, 44);
+            this.glModuleSel.Location = new System.Drawing.Point(142, 40);
             this.glModuleSel.Name = "glModuleSel";
             this.glModuleSel.Size = new System.Drawing.Size(144, 20);
             this.glModuleSel.TabIndex = 5;
@@ -220,7 +221,7 @@
             // bdModule
             // 
             this.bdModule.AutoSize = true;
-            this.bdModule.Location = new System.Drawing.Point(12, 70);
+            this.bdModule.Location = new System.Drawing.Point(12, 66);
             this.bdModule.Name = "bdModule";
             this.bdModule.Size = new System.Drawing.Size(96, 16);
             this.bdModule.TabIndex = 2;
@@ -233,7 +234,7 @@
             // 
             this.bdModuleSel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.bdModuleSel.FormattingEnabled = true;
-            this.bdModuleSel.Location = new System.Drawing.Point(142, 70);
+            this.bdModuleSel.Location = new System.Drawing.Point(142, 66);
             this.bdModuleSel.Name = "bdModuleSel";
             this.bdModuleSel.Size = new System.Drawing.Size(144, 20);
             this.bdModuleSel.TabIndex = 6;
@@ -251,7 +252,7 @@
             // gpSnrLimit
             // 
             this.gpSnrLimit.Enabled = false;
-            this.gpSnrLimit.Location = new System.Drawing.Point(242, 190);
+            this.gpSnrLimit.Location = new System.Drawing.Point(242, 177);
             this.gpSnrLimit.MaxLength = 3;
             this.gpSnrLimit.Name = "gpSnrLimit";
             this.gpSnrLimit.Size = new System.Drawing.Size(48, 22);
@@ -261,7 +262,7 @@
             // glSnrLimit
             // 
             this.glSnrLimit.Enabled = false;
-            this.glSnrLimit.Location = new System.Drawing.Point(242, 216);
+            this.glSnrLimit.Location = new System.Drawing.Point(242, 203);
             this.glSnrLimit.MaxLength = 3;
             this.glSnrLimit.Name = "glSnrLimit";
             this.glSnrLimit.Size = new System.Drawing.Size(48, 22);
@@ -271,7 +272,7 @@
             // bdSnrLimit
             // 
             this.bdSnrLimit.Enabled = false;
-            this.bdSnrLimit.Location = new System.Drawing.Point(242, 242);
+            this.bdSnrLimit.Location = new System.Drawing.Point(242, 229);
             this.bdSnrLimit.MaxLength = 3;
             this.bdSnrLimit.Name = "bdSnrLimit";
             this.bdSnrLimit.Size = new System.Drawing.Size(48, 22);
@@ -432,7 +433,7 @@
             // gpPassCriteria
             // 
             this.gpPassCriteria.AutoSize = true;
-            this.gpPassCriteria.Location = new System.Drawing.Point(12, 192);
+            this.gpPassCriteria.Location = new System.Drawing.Point(12, 179);
             this.gpPassCriteria.Name = "gpPassCriteria";
             this.gpPassCriteria.Size = new System.Drawing.Size(91, 16);
             this.gpPassCriteria.TabIndex = 3;
@@ -443,7 +444,7 @@
             // glPassCriteria
             // 
             this.glPassCriteria.AutoSize = true;
-            this.glPassCriteria.Location = new System.Drawing.Point(12, 218);
+            this.glPassCriteria.Location = new System.Drawing.Point(12, 205);
             this.glPassCriteria.Name = "glPassCriteria";
             this.glPassCriteria.Size = new System.Drawing.Size(122, 16);
             this.glPassCriteria.TabIndex = 6;
@@ -454,7 +455,7 @@
             // bdPassCriteria
             // 
             this.bdPassCriteria.AutoSize = true;
-            this.bdPassCriteria.Location = new System.Drawing.Point(12, 244);
+            this.bdPassCriteria.Location = new System.Drawing.Point(12, 231);
             this.bdPassCriteria.Name = "bdPassCriteria";
             this.bdPassCriteria.Size = new System.Drawing.Size(105, 16);
             this.bdPassCriteria.TabIndex = 9;
@@ -502,9 +503,9 @@
             this.groupBox2.Controls.Add(this.bdModule);
             this.groupBox2.Controls.Add(this.glModuleSel);
             this.groupBox2.Controls.Add(this.gpModuleSel);
-            this.groupBox2.Location = new System.Drawing.Point(12, 170);
+            this.groupBox2.Location = new System.Drawing.Point(12, 190);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(299, 124);
+            this.groupBox2.Size = new System.Drawing.Size(299, 120);
             this.groupBox2.TabIndex = 11;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Test Module";
@@ -513,7 +514,7 @@
             // 
             this.giModuleSel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.giModuleSel.FormattingEnabled = true;
-            this.giModuleSel.Location = new System.Drawing.Point(142, 96);
+            this.giModuleSel.Location = new System.Drawing.Point(142, 92);
             this.giModuleSel.Name = "giModuleSel";
             this.giModuleSel.Size = new System.Drawing.Size(144, 20);
             this.giModuleSel.TabIndex = 6;
@@ -522,7 +523,7 @@
             // giModule
             // 
             this.giModule.AutoSize = true;
-            this.giModule.Location = new System.Drawing.Point(12, 96);
+            this.giModule.Location = new System.Drawing.Point(12, 92);
             this.giModule.Name = "giModule";
             this.giModule.Size = new System.Drawing.Size(98, 16);
             this.giModule.TabIndex = 2;
@@ -533,6 +534,8 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.label32);
+            this.groupBox3.Controls.Add(this.testFixedType);
             this.groupBox3.Controls.Add(this.label16);
             this.groupBox3.Controls.Add(this.label20);
             this.groupBox3.Controls.Add(this.label14);
@@ -547,8 +550,6 @@
             this.groupBox3.Controls.Add(this.giSnrLower);
             this.groupBox3.Controls.Add(this.bdSnrLower);
             this.groupBox3.Controls.Add(this.glSnrLower);
-            this.groupBox3.Controls.Add(this.testToRtkFix);
-            this.groupBox3.Controls.Add(this.testToRtkFloat);
             this.groupBox3.Controls.Add(this.giSnrUpper);
             this.groupBox3.Controls.Add(this.bdSnrUpper);
             this.groupBox3.Controls.Add(this.glSnrUpper);
@@ -562,9 +563,9 @@
             this.groupBox3.Controls.Add(this.glPassCriteria);
             this.groupBox3.Controls.Add(this.bdSnrLimit);
             this.groupBox3.Controls.Add(this.gpPassCriteria);
-            this.groupBox3.Location = new System.Drawing.Point(12, 300);
+            this.groupBox3.Location = new System.Drawing.Point(12, 315);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(299, 311);
+            this.groupBox3.Size = new System.Drawing.Size(299, 290);
             this.groupBox3.TabIndex = 12;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Test Module Setting";
@@ -581,7 +582,7 @@
             // label20
             // 
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(186, 175);
+            this.label20.Location = new System.Drawing.Point(186, 162);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(34, 12);
             this.label20.TabIndex = 10;
@@ -599,7 +600,7 @@
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(132, 175);
+            this.label15.Location = new System.Drawing.Point(132, 162);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(35, 12);
             this.label15.TabIndex = 10;
@@ -608,7 +609,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(240, 175);
+            this.label3.Location = new System.Drawing.Point(240, 162);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(55, 12);
             this.label3.TabIndex = 10;
@@ -651,9 +652,9 @@
             this.waitPositionFix.AutoSize = true;
             this.waitPositionFix.Location = new System.Drawing.Point(12, 110);
             this.waitPositionFix.Name = "waitPositionFix";
-            this.waitPositionFix.Size = new System.Drawing.Size(208, 16);
+            this.waitPositionFix.Size = new System.Drawing.Size(156, 16);
             this.waitPositionFix.TabIndex = 15;
-            this.waitPositionFix.Text = "Wait position fixed (Support GPS only)";
+            this.waitPositionFix.Text = "Wait until the Position Fixed";
             this.waitPositionFix.UseVisualStyleBackColor = true;
             this.waitPositionFix.CheckedChanged += new System.EventHandler(this.waitPositionFix_CheckedChanged);
             // 
@@ -670,7 +671,7 @@
             // giSnrLower
             // 
             this.giSnrLower.Enabled = false;
-            this.giSnrLower.Location = new System.Drawing.Point(134, 268);
+            this.giSnrLower.Location = new System.Drawing.Point(134, 255);
             this.giSnrLower.MaxLength = 4;
             this.giSnrLower.Name = "giSnrLower";
             this.giSnrLower.Size = new System.Drawing.Size(48, 22);
@@ -680,7 +681,7 @@
             // bdSnrLower
             // 
             this.bdSnrLower.Enabled = false;
-            this.bdSnrLower.Location = new System.Drawing.Point(134, 242);
+            this.bdSnrLower.Location = new System.Drawing.Point(134, 229);
             this.bdSnrLower.MaxLength = 4;
             this.bdSnrLower.Name = "bdSnrLower";
             this.bdSnrLower.Size = new System.Drawing.Size(48, 22);
@@ -690,39 +691,17 @@
             // glSnrLower
             // 
             this.glSnrLower.Enabled = false;
-            this.glSnrLower.Location = new System.Drawing.Point(134, 216);
+            this.glSnrLower.Location = new System.Drawing.Point(134, 203);
             this.glSnrLower.MaxLength = 4;
             this.glSnrLower.Name = "glSnrLower";
             this.glSnrLower.Size = new System.Drawing.Size(48, 22);
             this.glSnrLower.TabIndex = 5;
             this.glSnrLower.TextChanged += new System.EventHandler(this.glSnrLower_TextChanged);
             // 
-            // testToRtkFix
-            // 
-            this.testToRtkFix.AutoSize = true;
-            this.testToRtkFix.Location = new System.Drawing.Point(12, 158);
-            this.testToRtkFix.Name = "testToRtkFix";
-            this.testToRtkFix.Size = new System.Drawing.Size(142, 16);
-            this.testToRtkFix.TabIndex = 0;
-            this.testToRtkFix.Text = "Wait until RTK Fix status";
-            this.testToRtkFix.UseVisualStyleBackColor = true;
-            this.testToRtkFix.CheckedChanged += new System.EventHandler(this.testToRtkFix_CheckedChanged);
-            // 
-            // testToRtkFloat
-            // 
-            this.testToRtkFloat.AutoSize = true;
-            this.testToRtkFloat.Location = new System.Drawing.Point(12, 134);
-            this.testToRtkFloat.Name = "testToRtkFloat";
-            this.testToRtkFloat.Size = new System.Drawing.Size(150, 16);
-            this.testToRtkFloat.TabIndex = 0;
-            this.testToRtkFloat.Text = "Wait until RTK Float status";
-            this.testToRtkFloat.UseVisualStyleBackColor = true;
-            this.testToRtkFloat.CheckedChanged += new System.EventHandler(this.testToRtkFloat_CheckedChanged);
-            // 
             // giSnrUpper
             // 
             this.giSnrUpper.Enabled = false;
-            this.giSnrUpper.Location = new System.Drawing.Point(188, 268);
+            this.giSnrUpper.Location = new System.Drawing.Point(188, 255);
             this.giSnrUpper.MaxLength = 4;
             this.giSnrUpper.Name = "giSnrUpper";
             this.giSnrUpper.Size = new System.Drawing.Size(48, 22);
@@ -732,7 +711,7 @@
             // bdSnrUpper
             // 
             this.bdSnrUpper.Enabled = false;
-            this.bdSnrUpper.Location = new System.Drawing.Point(188, 242);
+            this.bdSnrUpper.Location = new System.Drawing.Point(188, 229);
             this.bdSnrUpper.MaxLength = 4;
             this.bdSnrUpper.Name = "bdSnrUpper";
             this.bdSnrUpper.Size = new System.Drawing.Size(48, 22);
@@ -742,7 +721,7 @@
             // glSnrUpper
             // 
             this.glSnrUpper.Enabled = false;
-            this.glSnrUpper.Location = new System.Drawing.Point(188, 216);
+            this.glSnrUpper.Location = new System.Drawing.Point(188, 203);
             this.glSnrUpper.MaxLength = 4;
             this.glSnrUpper.Name = "glSnrUpper";
             this.glSnrUpper.Size = new System.Drawing.Size(48, 22);
@@ -752,7 +731,7 @@
             // gpSnrLower
             // 
             this.gpSnrLower.Enabled = false;
-            this.gpSnrLower.Location = new System.Drawing.Point(134, 190);
+            this.gpSnrLower.Location = new System.Drawing.Point(134, 177);
             this.gpSnrLower.MaxLength = 4;
             this.gpSnrLower.Name = "gpSnrLower";
             this.gpSnrLower.Size = new System.Drawing.Size(48, 22);
@@ -762,7 +741,7 @@
             // gpSnrUpper
             // 
             this.gpSnrUpper.Enabled = false;
-            this.gpSnrUpper.Location = new System.Drawing.Point(188, 190);
+            this.gpSnrUpper.Location = new System.Drawing.Point(188, 177);
             this.gpSnrUpper.MaxLength = 4;
             this.gpSnrUpper.Name = "gpSnrUpper";
             this.gpSnrUpper.Size = new System.Drawing.Size(48, 22);
@@ -772,7 +751,7 @@
             // giPassCriteria
             // 
             this.giPassCriteria.AutoSize = true;
-            this.giPassCriteria.Location = new System.Drawing.Point(12, 270);
+            this.giPassCriteria.Location = new System.Drawing.Point(12, 257);
             this.giPassCriteria.Name = "giPassCriteria";
             this.giPassCriteria.Size = new System.Drawing.Size(107, 16);
             this.giPassCriteria.TabIndex = 9;
@@ -783,7 +762,7 @@
             // giSnrLimit
             // 
             this.giSnrLimit.Enabled = false;
-            this.giSnrLimit.Location = new System.Drawing.Point(242, 268);
+            this.giSnrLimit.Location = new System.Drawing.Point(242, 255);
             this.giSnrLimit.MaxLength = 3;
             this.giSnrLimit.Name = "giSnrLimit";
             this.giSnrLimit.Size = new System.Drawing.Size(48, 22);
@@ -910,6 +889,28 @@
             this.drPanel.TabIndex = 21;
             this.drPanel.Visible = false;
             // 
+            // accZUpper
+            // 
+            this.accZUpper.Enabled = false;
+            this.accZUpper.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.accZUpper.Location = new System.Drawing.Point(163, 65);
+            this.accZUpper.MaxLength = 10;
+            this.accZUpper.Name = "accZUpper";
+            this.accZUpper.Size = new System.Drawing.Size(30, 22);
+            this.accZUpper.TabIndex = 11;
+            this.accZUpper.TextChanged += new System.EventHandler(this.accZUpper_TextChanged);
+            // 
+            // accYUpper
+            // 
+            this.accYUpper.Enabled = false;
+            this.accYUpper.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.accYUpper.Location = new System.Drawing.Point(127, 65);
+            this.accYUpper.MaxLength = 10;
+            this.accYUpper.Name = "accYUpper";
+            this.accYUpper.Size = new System.Drawing.Size(30, 22);
+            this.accYUpper.TabIndex = 11;
+            this.accYUpper.TextChanged += new System.EventHandler(this.accYUpper_TextChanged);
+            // 
             // label24
             // 
             this.label24.AutoSize = true;
@@ -941,6 +942,17 @@
             this.tempCriteria.TabIndex = 19;
             this.tempCriteria.TextChanged += new System.EventHandler(this.tempCriteria_TextChanged);
             // 
+            // accXUpper
+            // 
+            this.accXUpper.Enabled = false;
+            this.accXUpper.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.accXUpper.Location = new System.Drawing.Point(91, 65);
+            this.accXUpper.MaxLength = 10;
+            this.accXUpper.Name = "accXUpper";
+            this.accXUpper.Size = new System.Drawing.Size(30, 22);
+            this.accXUpper.TabIndex = 10;
+            this.accXUpper.TextChanged += new System.EventHandler(this.accXUpper_TextChanged);
+            // 
             // insDrGyroUpper
             // 
             this.insDrGyroUpper.Enabled = false;
@@ -951,6 +963,48 @@
             this.insDrGyroUpper.Size = new System.Drawing.Size(62, 22);
             this.insDrGyroUpper.TabIndex = 19;
             this.insDrGyroUpper.TextChanged += new System.EventHandler(this.insDrGyroUpper_TextChanged);
+            // 
+            // accZLower
+            // 
+            this.accZLower.Enabled = false;
+            this.accZLower.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.accZLower.Location = new System.Drawing.Point(163, 91);
+            this.accZLower.MaxLength = 10;
+            this.accZLower.Name = "accZLower";
+            this.accZLower.Size = new System.Drawing.Size(30, 22);
+            this.accZLower.TabIndex = 13;
+            this.accZLower.TextChanged += new System.EventHandler(this.accZLower_TextChanged);
+            // 
+            // label30
+            // 
+            this.label30.AutoSize = true;
+            this.label30.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label30.Location = new System.Drawing.Point(94, 50);
+            this.label30.Name = "label30";
+            this.label30.Size = new System.Drawing.Size(13, 12);
+            this.label30.TabIndex = 6;
+            this.label30.Text = "X";
+            // 
+            // accYLower
+            // 
+            this.accYLower.Enabled = false;
+            this.accYLower.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.accYLower.Location = new System.Drawing.Point(127, 91);
+            this.accYLower.MaxLength = 10;
+            this.accYLower.Name = "accYLower";
+            this.accYLower.Size = new System.Drawing.Size(30, 22);
+            this.accYLower.TabIndex = 13;
+            this.accYLower.TextChanged += new System.EventHandler(this.accYLower_TextChanged);
+            // 
+            // label31
+            // 
+            this.label31.AutoSize = true;
+            this.label31.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label31.Location = new System.Drawing.Point(166, 50);
+            this.label31.Name = "label31";
+            this.label31.Size = new System.Drawing.Size(12, 12);
+            this.label31.TabIndex = 6;
+            this.label31.Text = "Z";
             // 
             // pressureCriteria
             // 
@@ -963,6 +1017,16 @@
             this.pressureCriteria.TabIndex = 18;
             this.pressureCriteria.TextChanged += new System.EventHandler(this.pressureCriteria_TextChanged);
             // 
+            // label29
+            // 
+            this.label29.AutoSize = true;
+            this.label29.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label29.Location = new System.Drawing.Point(130, 50);
+            this.label29.Name = "label29";
+            this.label29.Size = new System.Drawing.Size(13, 12);
+            this.label29.TabIndex = 6;
+            this.label29.Text = "Y";
+            // 
             // insDrGyroLower
             // 
             this.insDrGyroLower.Enabled = false;
@@ -973,6 +1037,39 @@
             this.insDrGyroLower.Size = new System.Drawing.Size(62, 22);
             this.insDrGyroLower.TabIndex = 18;
             this.insDrGyroLower.TextChanged += new System.EventHandler(this.insDrGyroLower_TextChanged);
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label28.Location = new System.Drawing.Point(48, 69);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(34, 12);
+            this.label28.TabIndex = 6;
+            this.label28.Text = "Upper";
+            // 
+            // testAcc
+            // 
+            this.testAcc.AutoSize = true;
+            this.testAcc.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.testAcc.Location = new System.Drawing.Point(22, 35);
+            this.testAcc.Name = "testAcc";
+            this.testAcc.Size = new System.Drawing.Size(113, 16);
+            this.testAcc.TabIndex = 8;
+            this.testAcc.Text = "Test Accelerometer";
+            this.testAcc.UseVisualStyleBackColor = true;
+            this.testAcc.CheckedChanged += new System.EventHandler(this.testAcc_CheckedChanged);
+            // 
+            // accXLower
+            // 
+            this.accXLower.Enabled = false;
+            this.accXLower.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.accXLower.Location = new System.Drawing.Point(91, 91);
+            this.accXLower.MaxLength = 10;
+            this.accXLower.Name = "accXLower";
+            this.accXLower.Size = new System.Drawing.Size(30, 22);
+            this.accXLower.TabIndex = 12;
+            this.accXLower.TextChanged += new System.EventHandler(this.accXLower_TextChanged);
             // 
             // testBaro
             // 
@@ -985,6 +1082,16 @@
             this.testBaro.Text = "Test Barometer";
             this.testBaro.UseVisualStyleBackColor = true;
             this.testBaro.CheckedChanged += new System.EventHandler(this.testBaro_CheckedChanged);
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label27.Location = new System.Drawing.Point(46, 95);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(35, 12);
+            this.label27.TabIndex = 6;
+            this.label27.Text = "Lower";
             // 
             // label26
             // 
@@ -1258,13 +1365,14 @@
             // 
             this.groupBox5.Controls.Add(this.dlBaudSel);
             this.groupBox5.Controls.Add(this.label5);
+            this.groupBox5.Controls.Add(this.twoUartDownload);
             this.groupBox5.Controls.Add(this.enableSlaveDownload);
             this.groupBox5.Controls.Add(this.slaveIniFileName);
             this.groupBox5.Controls.Add(this.enableDownload);
             this.groupBox5.Controls.Add(this.browseSlaveIni);
             this.groupBox5.Location = new System.Drawing.Point(12, 64);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(299, 100);
+            this.groupBox5.Size = new System.Drawing.Size(299, 120);
             this.groupBox5.TabIndex = 13;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Download Setting";
@@ -1272,11 +1380,23 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 75);
+            this.label5.Location = new System.Drawing.Point(12, 94);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(65, 12);
             this.label5.TabIndex = 3;
             this.label5.Text = "Slave ini File";
+            // 
+            // twoUartDownload
+            // 
+            this.twoUartDownload.AutoSize = true;
+            this.twoUartDownload.Location = new System.Drawing.Point(12, 68);
+            this.twoUartDownload.Name = "twoUartDownload";
+            this.twoUartDownload.Size = new System.Drawing.Size(168, 16);
+            this.twoUartDownload.TabIndex = 1;
+            this.twoUartDownload.Text = "Support Two UART download";
+            this.twoUartDownload.UseVisualStyleBackColor = true;
+            this.twoUartDownload.Visible = false;
+            this.twoUartDownload.CheckedChanged += new System.EventHandler(this.twoUartDownload_CheckedChanged);
             // 
             // enableSlaveDownload
             // 
@@ -1291,7 +1411,7 @@
             // 
             // slaveIniFileName
             // 
-            this.slaveIniFileName.Location = new System.Drawing.Point(83, 70);
+            this.slaveIniFileName.Location = new System.Drawing.Point(83, 89);
             this.slaveIniFileName.MaxLength = 260;
             this.slaveIniFileName.Name = "slaveIniFileName";
             this.slaveIniFileName.Size = new System.Drawing.Size(170, 22);
@@ -1300,7 +1420,7 @@
             // 
             // browseSlaveIni
             // 
-            this.browseSlaveIni.Location = new System.Drawing.Point(256, 69);
+            this.browseSlaveIni.Location = new System.Drawing.Point(256, 88);
             this.browseSlaveIni.Name = "browseSlaveIni";
             this.browseSlaveIni.Size = new System.Drawing.Size(32, 23);
             this.browseSlaveIni.TabIndex = 1;
@@ -1308,133 +1428,29 @@
             this.browseSlaveIni.UseVisualStyleBackColor = true;
             this.browseSlaveIni.Click += new System.EventHandler(this.browseSlaveIni_Click);
             // 
-            // testAcc
+            // testFixedType
             // 
-            this.testAcc.AutoSize = true;
-            this.testAcc.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.testAcc.Location = new System.Drawing.Point(22, 35);
-            this.testAcc.Name = "testAcc";
-            this.testAcc.Size = new System.Drawing.Size(113, 16);
-            this.testAcc.TabIndex = 8;
-            this.testAcc.Text = "Test Accelerometer";
-            this.testAcc.UseVisualStyleBackColor = true;
-            this.testAcc.CheckedChanged += new System.EventHandler(this.testAcc_CheckedChanged);
+            this.testFixedType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.testFixedType.FormattingEnabled = true;
+            this.testFixedType.Items.AddRange(new object[] {
+            "Position Fixed 2D / 3D",
+            "RTK Float",
+            "RTK Fix",
+            "RTK Fix and RTK Ratio >= 10"});
+            this.testFixedType.Location = new System.Drawing.Point(77, 132);
+            this.testFixedType.Name = "testFixedType";
+            this.testFixedType.Size = new System.Drawing.Size(209, 20);
+            this.testFixedType.TabIndex = 0;
+            this.testFixedType.SelectedIndexChanged += new System.EventHandler(this.testFixedType_SelectedIndexChanged);
             // 
-            // label27
+            // label32
             // 
-            this.label27.AutoSize = true;
-            this.label27.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label27.Location = new System.Drawing.Point(46, 95);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(35, 12);
-            this.label27.TabIndex = 6;
-            this.label27.Text = "Lower";
-            // 
-            // accXLower
-            // 
-            this.accXLower.Enabled = false;
-            this.accXLower.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.accXLower.Location = new System.Drawing.Point(91, 91);
-            this.accXLower.MaxLength = 10;
-            this.accXLower.Name = "accXLower";
-            this.accXLower.Size = new System.Drawing.Size(30, 22);
-            this.accXLower.TabIndex = 12;
-            this.accXLower.TextChanged += new System.EventHandler(this.accXLower_TextChanged);
-            // 
-            // label28
-            // 
-            this.label28.AutoSize = true;
-            this.label28.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label28.Location = new System.Drawing.Point(48, 69);
-            this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(34, 12);
-            this.label28.TabIndex = 6;
-            this.label28.Text = "Upper";
-            // 
-            // label29
-            // 
-            this.label29.AutoSize = true;
-            this.label29.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label29.Location = new System.Drawing.Point(130, 50);
-            this.label29.Name = "label29";
-            this.label29.Size = new System.Drawing.Size(13, 12);
-            this.label29.TabIndex = 6;
-            this.label29.Text = "Y";
-            // 
-            // accYLower
-            // 
-            this.accYLower.Enabled = false;
-            this.accYLower.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.accYLower.Location = new System.Drawing.Point(127, 91);
-            this.accYLower.MaxLength = 10;
-            this.accYLower.Name = "accYLower";
-            this.accYLower.Size = new System.Drawing.Size(30, 22);
-            this.accYLower.TabIndex = 13;
-            this.accYLower.TextChanged += new System.EventHandler(this.accYLower_TextChanged);
-            // 
-            // label30
-            // 
-            this.label30.AutoSize = true;
-            this.label30.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label30.Location = new System.Drawing.Point(94, 50);
-            this.label30.Name = "label30";
-            this.label30.Size = new System.Drawing.Size(13, 12);
-            this.label30.TabIndex = 6;
-            this.label30.Text = "X";
-            // 
-            // accXUpper
-            // 
-            this.accXUpper.Enabled = false;
-            this.accXUpper.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.accXUpper.Location = new System.Drawing.Point(91, 65);
-            this.accXUpper.MaxLength = 10;
-            this.accXUpper.Name = "accXUpper";
-            this.accXUpper.Size = new System.Drawing.Size(30, 22);
-            this.accXUpper.TabIndex = 10;
-            this.accXUpper.TextChanged += new System.EventHandler(this.accXUpper_TextChanged);
-            // 
-            // accYUpper
-            // 
-            this.accYUpper.Enabled = false;
-            this.accYUpper.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.accYUpper.Location = new System.Drawing.Point(127, 65);
-            this.accYUpper.MaxLength = 10;
-            this.accYUpper.Name = "accYUpper";
-            this.accYUpper.Size = new System.Drawing.Size(30, 22);
-            this.accYUpper.TabIndex = 11;
-            this.accYUpper.TextChanged += new System.EventHandler(this.accYUpper_TextChanged);
-            // 
-            // label31
-            // 
-            this.label31.AutoSize = true;
-            this.label31.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label31.Location = new System.Drawing.Point(166, 50);
-            this.label31.Name = "label31";
-            this.label31.Size = new System.Drawing.Size(12, 12);
-            this.label31.TabIndex = 6;
-            this.label31.Text = "Z";
-            // 
-            // accZLower
-            // 
-            this.accZLower.Enabled = false;
-            this.accZLower.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.accZLower.Location = new System.Drawing.Point(163, 91);
-            this.accZLower.MaxLength = 10;
-            this.accZLower.Name = "accZLower";
-            this.accZLower.Size = new System.Drawing.Size(30, 22);
-            this.accZLower.TabIndex = 13;
-            this.accZLower.TextChanged += new System.EventHandler(this.accZLower_TextChanged);
-            // 
-            // accZUpper
-            // 
-            this.accZUpper.Enabled = false;
-            this.accZUpper.Font = new System.Drawing.Font("新細明體", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.accZUpper.Location = new System.Drawing.Point(163, 65);
-            this.accZUpper.MaxLength = 10;
-            this.accZUpper.Name = "accZUpper";
-            this.accZUpper.Size = new System.Drawing.Size(30, 22);
-            this.accZUpper.TabIndex = 11;
-            this.accZUpper.TextChanged += new System.EventHandler(this.accZUpper_TextChanged);
+            this.label32.AutoSize = true;
+            this.label32.Location = new System.Drawing.Point(10, 136);
+            this.label32.Name = "label32";
+            this.label32.Size = new System.Drawing.Size(61, 12);
+            this.label32.TabIndex = 3;
+            this.label32.Text = "Fixed Type ";
             // 
             // SettingForm
             // 
@@ -1576,8 +1592,6 @@
         private System.Windows.Forms.TextBox giSnrLimit;
         private System.Windows.Forms.Panel drPanel;
         private System.Windows.Forms.CheckBox reverseRotation;
-        private System.Windows.Forms.CheckBox testToRtkFix;
-        private System.Windows.Forms.CheckBox testToRtkFloat;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.TextBox accZUpper;
@@ -1592,5 +1606,8 @@
         private System.Windows.Forms.CheckBox testAcc;
         private System.Windows.Forms.TextBox accXLower;
         private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.CheckBox twoUartDownload;
+        private System.Windows.Forms.Label label32;
+        private System.Windows.Forms.ComboBox testFixedType;
     }
 }
